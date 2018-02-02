@@ -1,17 +1,12 @@
 var com = com || {};
 com.lumpofcode = com.lumpofcode || {};
 
-/**
- * @Typedef Model {observations: Array<Array<Number>>, clusters: Array<Array<Number>>, assignments: Array<Number>}}
- * @Typedef ConvergenceFunction function(Array<Number>, Array<Number>): Number
- */
 
 /**
  * @public
  * kmeans module
  * 
  *   cluster(model, k, converged = assignmentsConverged)
- *   randomCentroidInitializer(observations, k)
  *   distance(p, q),
  *   distanceSquared(p, q),
  *   centroidsConverged(delta)
@@ -159,11 +154,24 @@ com.lumpofcode.kmeans = (function() {
     /**
      * @public
      * Run k-means on the given model until each centroid converges to with the given delta
-     *
-     * @param {*} model - object with observations, centroids and assignments
-     *                    this is NOT modified by the algorithm, rather a new model is returned.
+     * The initial model is NOT modified by the algorithm, rather a new model is returned.
+     * 
+     * @param {*} model - object with 
+     *                    observations: array, length n, of data points; each datapoint is 
+     *                                  itself an array of numbers (a vector).
+     *                                  The length each datapoint (d) vector should be the same.  
+     *                    centroids: array of data points.
+     *                               The length of the centroids array indicates the number of
+     *                               of desired clusters (k).
+     *                               each datapoint is array (vector) of numbers 
+     *                               with same dimension as the datapoints in observations. 
+     *                    assignments: array of integers, one per observation, 
+     *                                 with values 0..centroids.length - 1
      * @param number delta - the maximum difference between each centroid in consecutive runs for convergence
-     * @return {*} - new model with updated centroids and assignments.
+     * @return {*} - result with 
+     *               model: model, as described above, with updated centroids and assignments, 
+     *               iterations: number of iterations, 
+     *               durationMs: elapsed time in milliseconds
      */
     function kmeans(model, maximumIterations = 200, converged = assignmentsConverged) {
         const start = new Date();
@@ -258,18 +266,3 @@ com.lumpofcode.kmeans = (function() {
         'assignmentsConverged': assignmentsConverged
     };
 })();
-
-
-// results = kmeans.cluster(model, 200, kmeans.centroidsConverged(0.0000000000001));  // cluster using centroid convergence
-// results = kmeans.cluster(model, 200, kmeans.assignmentsConverged);    // cluster using cluster convergence
-// results = kmeans.cluster(model);  // cluster using default convergence and maximumIterations
-
-// random model
-// results = kmeans.cluster(randomModel(20, 10000, 100, -3.00, 3.00));
-
-// this shows complete results
-// console.log(JSON.stringify(results, null, 2));
-
-// in node, this shows very pretty results, but abbreviates large arrays in node
-// in browsers, this shows an interactive tree of the object
-// console.dir(results, {depth: null, colors: true})
