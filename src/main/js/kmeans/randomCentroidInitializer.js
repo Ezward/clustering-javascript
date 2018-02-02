@@ -1,4 +1,9 @@
 
+//
+// uses requirejs modules
+//
+define(function () {
+    "use strict";
 
     /**
      * @public
@@ -9,7 +14,8 @@
      * @param {[float]} observations the data as an array of number
      * @param {integer} k the number of clusters
      */
-    com.lumpofcode.kmeans.randomCentroidInitializer = function(observations, k) {
+    return function(observations, k) {
+
         //
         // choose k random centers from list of observations
         //
@@ -35,3 +41,6 @@
 
         return {'observations': observations, 'centroids': centroids, 'assignments': assignments}
     }
+
+});
+

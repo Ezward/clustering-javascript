@@ -1,9 +1,8 @@
-var com = com || {};
-com.lumpofcode = com.lumpofcode || {};
-
+//
+// uses requirejs modules
+//
 
 /**
- * @public
  * kmeans module
  * 
  *   cluster(model, k, converged = assignmentsConverged)
@@ -12,8 +11,9 @@ com.lumpofcode = com.lumpofcode || {};
  *   centroidsConverged(delta)
  *   assignmentsConverged(model, newModel)
  */
-com.lumpofcode.kmeans = (function() {
-
+define(function () {
+    "use strict";
+    
     /**
      * @public
      * Calculate the squared distance between two vectors.
@@ -74,6 +74,8 @@ com.lumpofcode.kmeans = (function() {
     /**
      * @private
      * Calculate the centroid for the given observations.
+     * This takes the average of all observations (at each dimension).
+     * This average vector is the centroid for those observations.
      *
      * @param [[number]] observations - list of observation vectors
      * @return [number] centroid for given observations (vector of same dimension as observations)
@@ -83,25 +85,33 @@ com.lumpofcode.kmeans = (function() {
         const d = observations[0].length;   // dimension of vectors
 
         // create zero vector of same dimension as observation
-        let sum = [];
+        let centroid = [];
         for(let i = 0; i < d; i += 1) {
-            sum.push(0.0);
+            centroid.push(0.0);
         }
 
-        // add each observation to the sum vector
+        //
+        // sum all observations at each dimension
+        //
         for(let i = 0; i < n; i += 1) {
+            //
             // add the observation to the sum vector, element by element
+            // to prepare to calculate the average at each dimension.
+            //
             for(let j = 0; j < d; j += 1) {
-                sum[j] += observations[i][j];
+                centroid[j] += observations[i][j];
             }
         }
 
-        // divide each element of the sum by the number of observations
+        //
+        // divide each dimension by the number of observations
+        // to create the average vector.
+        //
         for(let j = 0; j < d; j += 1) {
-            sum[j] /= n;
+            centroid[j] /= n;
         }
 
-        return sum;
+        return centroid;
     }
 
     /**
@@ -197,12 +207,12 @@ com.lumpofcode.kmeans = (function() {
 
     /**
      * @public
-     * return a function that determines convergence based the centroids.
+     * Return a function that determines convergence based on the centroids.
      * If two consecutive sets of centroids remain within a given delta,
      * then the algorithm is converged.
      * 
      * @param number delta, the maximum difference between each centroid in consecutive runs for convergence
-     * @return function
+     * @return function to use as the converged function in kmeans call.
      */
     function centroidsConverged(delta) {
         /**
@@ -242,16 +252,16 @@ com.lumpofcode.kmeans = (function() {
             if (a === undefined || b === undefined) return false;
             if (a === null || b === null) return false;
             if (a.length !== b.length) return false;
-          
+        
             // If you don't care about the order of the elements inside
             // the array, you should sort both arrays here.
-          
+        
             for (var i = 0; i < a.length; ++i) {
-              if (a[i] !== b[i]) return false;
+            if (a[i] !== b[i]) return false;
             }
             return true;
-          }
-          
+        }
+        
         return arraysEqual(model.assignments, newModel.assignments);
     }
     
@@ -265,4 +275,6 @@ com.lumpofcode.kmeans = (function() {
         'centroidsConverged': centroidsConverged,
         'assignmentsConverged': assignmentsConverged
     };
-})();
+
+});
+
