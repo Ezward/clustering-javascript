@@ -3,7 +3,7 @@
 //
 define(function () {
     "use strict";
-    
+
     /**
      * Generate a random model for clustering
      * @param {Integer} k number of clusters (number of centroids) 
@@ -12,8 +12,7 @@ define(function () {
      * @param {Number} min minimum value for data point
      * @param {Number} max maximum value for data point
      */
-    com.lumpofcode.kmeans.randomModel = function(k, n, d, min, max) {
-        "use strict";
+    return function(k, n, d, min, max) {
 
         const range = max - min;
 

@@ -15,7 +15,7 @@ define(function (require) {
      * 
      * @param {integer} k number of clusters to create
      */
-    function clusterIrisData(k) {
+    return function(k) {
 
         //
         // map iris data rows from dictionary to vector (array), leaving out the label
@@ -95,7 +95,6 @@ define(function (require) {
             }
         });
     }
-    clusterIrisData(3);
 
 });
 

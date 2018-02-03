@@ -1,6 +1,6 @@
 define(function () {
     "use strict"
-    
+
     /**
      * Iris dataset retrieved from https://figshare.com/articles/Iris_DataSet/878028
      * Original source is https://archive.ics.uci.edu/ml/datasets/iris

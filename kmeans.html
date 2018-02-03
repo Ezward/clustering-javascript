@@ -10,7 +10,6 @@
     <meta name="author" content="Ezward">
 
     <!-- third party includes -->
-    <!-- TODO: download this and put it in /lib, then update clusterIrisData.js to require it -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
 
     <style>
@@ -38,7 +37,20 @@
     </div>
 
     <!-- bootstrap application with requirejs -->
-    <script data-main="requireConfig" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.5/require.js"></script>
+    <!-- <script data-main="requireConfig" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.5/require.js"></script> -->
+
+    <!-- either user requirejs (above) OR these script tags, but not both -->
+    <script data-root="src/main/js" src="src/main/js/loader/loader.js" ></script>
+    <script src="src/main/js/dataset/iris.js" ></script>
+    <script src="src/main/js/kmeans/kmeans.js" ></script>
+    <script src="src/main/js/kmeans/kmeanspp.js" ></script>
+    <script src="src/main/js/kmeans/randomCentroidInitializer.js" ></script>
+    <script src="src/main/js/kmeans/kmeansRandomModel.js" ></script>
+    <script src="src/main/js/clusterIrisData.js" ></script>
+    <script>
+        const clusterIrisData = require("./clusterIrisData");
+        clusterIrisData(3);
+    </script>
 </body>
 
 </html>
