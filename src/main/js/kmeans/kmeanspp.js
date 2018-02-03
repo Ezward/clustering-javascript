@@ -4,7 +4,7 @@
 define(function (require) {
     "use strict";
 
-    const kmeans = require("./kmeans/kmeans");
+    const kmeans = require("./kmeans");
 
     /**
      * @public

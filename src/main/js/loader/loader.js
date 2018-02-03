@@ -24,10 +24,12 @@
 var com = com || {};
 com.lumpofcode = com.lumpofcode || {};
 com.lumpofcode.loader = function() {
-    const modules = {};
-    const bindings = {};
+    const modules = {};     // map of require path to module constructor
+    const bindings = {};    // map of require path to constructed (bound) modules
+    const bindingStack = [];// stack used to resolve relative paths during binding
 
     /**
+     * @private
      * Get the most recently loaded script tag.
      * This uses the hack that the browser loads
      * scripts in order, provided they are not 'async'
@@ -41,9 +43,10 @@ com.lumpofcode.loader = function() {
     }
 
     /**
+     * @private
      * Determine if a string start with a given substring.
-     * @param {*} s 
-     * @param {*} t 
+     * @param {string} s 
+     * @param {string} t 
      * @return true if s begins with t, false otherwise
      */
     function startsWith(s, t) {
@@ -54,11 +57,12 @@ com.lumpofcode.loader = function() {
     }
 
     /**
+     * @private
      * count the number of matching characters at
      * the start of two strings.
      * 
-     * @param {*} p 
-     * @param {*} q 
+     * @param {string} p 
+     * @param {string} q 
      * @return the matching count.
      */
     function matchAtStartCount(p, q) {
@@ -74,11 +78,12 @@ com.lumpofcode.loader = function() {
     }
 
     /**
+     * @private
      * return the span of characters that match
      * at the start of two strings.
      * 
-     * @param {*} p 
-     * @param {*} q 
+     * @param {string} p 
+     * @param {string} q 
      * @return the matching characters.
      */
     function matchAtStart(p, q) {
@@ -89,11 +94,12 @@ com.lumpofcode.loader = function() {
     }
 
     /**
+     * @private
      * Replace substring at start of a string.
      * 
-     * @param {*} s the string
-     * @param {*} t the substring to replace
-     * @param {*} r the replacement
+     * @param {string} s the string
+     * @param {string} t the substring to replace
+     * @param {string} r the replacement
      * @return if the string starts with the substring, 
      *         then a new string with substring replaced by the replacement
      *         otherwise the original string.
@@ -106,11 +112,12 @@ com.lumpofcode.loader = function() {
     }
 
     /**
+     * @private
      * Replace substring at end of a string.
      * 
-     * @param {*} s the string
-     * @param {*} t the substring to replace
-     * @param {*} r the replacement
+     * @param {string} s the string
+     * @param {string} t the substring to replace
+     * @param {string} r the replacement
      * @return if the string ends with the substring, 
      *         then a new string with substring replaced by the replacement
      *         otherwise the original string.
@@ -125,18 +132,32 @@ com.lumpofcode.loader = function() {
     }
 
 
-    //
-    // get the most recently loaded script 
-    // (that will be this one; loader.js)
-    // and get the data-root element from it
-    // so we can use it as the modules root
-    //
+    /**
+     * @private
+     * get the project path by sniffing
+     * the path to the html page, 
+     * which we assume to be in 
+     * the root of the project.
+     * 
+     * @return {string} full path to root of project
+     */
     function getProjectRootPath() {
+        //
+        // - both the script src path and 
+        //   the owning page's URI are
+        //   fully qualified paths.
+        //
         const script = lastScript();
         const scriptPath = script.src;
         const doc = script.ownerDocument;
         const docPath = doc.baseURI;
 
+        //
+        // - so find what those two paths
+        //   have in common at their starts
+        //   and that will be the path
+        //   to the project folder.
+        //
         const projectRoot = matchAtStart(docPath, scriptPath);
         return projectRoot;
     }
@@ -158,7 +179,6 @@ com.lumpofcode.loader = function() {
         // get most recently loaded script tag (that will the module's script)
         // so we can get the src path from it.
         //
-        // let path = lastScript().src;
         let path = replaceAtStart(lastScript().src, projectRoot, "");
 
         //
@@ -175,15 +195,49 @@ com.lumpofcode.loader = function() {
             throw Error("module at path(" + path + ") is already loaded." );
         }
         modules[path] = module;
+
     }
 
+    /**
+     * require paths are relative to the module calling them,
+     * so use the binding stack to resolve the full require path
+     * 
+     * @param {string} path relative path to module being required
+     */
+    function resolveRequirePath(path) {
+        if(!path.startsWith("./")) {
+            return path;    // it's an absolute path
+        }
+
+        //
+        // it's relative the module that is loading it,
+        // so get the path from the binding stack
+        //
+        const dependantPath = (bindingStack.length > 0) ? bindingStack[0] : "./";
+        const parts = dependantPath.split("/");    // make it an array
+        parts.pop();       // remove the dependant module name
+        parts.push(replaceAtStart(path, "./", ""));  // add require to path
+
+        return parts.join("/");
+    }
+
+    /**
+     * Call the modules constructor to get an instance of the module.
+     * The may lead to recursive calls to require depencies.
+     * 
+     * @param {string} path relative path to module being required
+     */
     function bind(path) {
+        path = resolveRequirePath(path);
+
         if(typeof modules[path] === 'undefined') {
             throw Error("module at path(" + path + ") is not loaded." );
         }
 
         if(typeof bindings[path] === 'undefined') {
-            bindings[path] = modules[path](bind);
+            bindingStack.unshift(path); // push module being bound onto the stack
+            bindings[path] = modules[path](bind);   // bind the module
+            bindingStack.shift();       // pop module, we are done binding it
         }
 
         return bindings[path];
@@ -192,6 +246,10 @@ com.lumpofcode.loader = function() {
     return {'load': load, 'bind': bind};
 }();
 
+//
+// set the global define and require methods
+// to use our loader
+//
 const define = com.lumpofcode.loader.load;
 const require = com.lumpofcode.loader.bind;
 
