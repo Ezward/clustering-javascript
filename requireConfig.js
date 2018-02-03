@@ -13,4 +13,4 @@ requirejs.config({
 });
 
 // load the application.
-requirejs(['app/clusterIrisData']);
+requirejs(['app/main']);

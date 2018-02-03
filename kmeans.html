@@ -40,6 +40,7 @@
     <!-- <script data-main="requireConfig" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.5/require.js"></script> -->
 
     <!-- either user requirejs (above) OR these script tags, but not both -->
+    <!-- bootstrap with explicit script tags so 'view source' works -->
     <script data-root="src/main/js" src="src/main/js/loader/loader.js" ></script>
     <script src="src/main/js/dataset/iris.js" ></script>
     <script src="src/main/js/kmeans/kmeans.js" ></script>
@@ -47,10 +48,8 @@
     <script src="src/main/js/kmeans/randomCentroidInitializer.js" ></script>
     <script src="src/main/js/kmeans/kmeansRandomModel.js" ></script>
     <script src="src/main/js/clusterIrisData.js" ></script>
-    <script>
-        const clusterIrisData = require("./clusterIrisData");
-        clusterIrisData(3);
-    </script>
+    <script src="src/main/js/main.js" onload="require('./main')"></script>
+
 </body>
 
 </html>
