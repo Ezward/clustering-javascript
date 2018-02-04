@@ -20,7 +20,7 @@ define(function () {
      *
      * @param [number] p vector with same dimension as q
      * @param [number] q vector with same dimension as p
-     * @return number the distance between p and q squared
+     * @return {number} the distance between p and q squared
      */
     function distanceSquared(p, q) {
         const d = p.length; // dimension of vectors
@@ -50,11 +50,11 @@ define(function () {
      * @private
      * find the closest centroid for the given observation and return it's index.
      *
-     * @param [[number]] centroids - array of k vectors with same dimension as observations.
+     * @param [[number]] centroids - array of k vectors, each vector with same dimension as observations.
      *                               these are the center of the k clusters
-     * @param [[number]] observation - array of n vectors with same dimension as centroids.
-     *                                 these are the observations to be clustered.
-     * @return number the index of the closest centroid in centroids
+     * @param [[number]] observation - vector with same dimension as centroids.
+     *                                 this is the observation to be clustered.
+     * @return {number} the index of the closest centroid in centroids
      */
     function findClosestCentroid(centroids, observation) {
         const k = centroids.length; // number of clusters/centroids
@@ -77,7 +77,7 @@ define(function () {
      * This takes the average of all observations (at each dimension).
      * This average vector is the centroid for those observations.
      *
-     * @param [[number]] observations - list of observation vectors
+     * @param [[number]] observations - array of observations (each observatino is a vectors)
      * @return [number] centroid for given observations (vector of same dimension as observations)
      */
     function calculateCentroid(observations) {

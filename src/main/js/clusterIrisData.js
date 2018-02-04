@@ -40,7 +40,7 @@ define(function (require) {
      * Use the model assignments to create
      * array of observation indices for each centroid
      * 
-     * @param {model} model 
+     * @param {object} model with observations, centroids and assignments
      * @reutrn [[number]] array of observation indices for each cluster
      */
     function assignmentsToClusters(model) {
@@ -77,55 +77,36 @@ define(function (require) {
      * @return map of species to percent for each cluster (centroid)
      */
     function measureClusterCompositions(clusters) {
-        const n = iris.length;
-        const k = clusters.length;
-
         //
         // count number of each species using labels given in the dataset
         //
-        const species = ['setosa', 'versicolor', 'virginica'];
         const speciesCounts = {'setosa': 0, 'versicolor': 0, 'virginica': 0};
-        for(let i = 0; i < iris.length; i += 1) {
-            speciesCounts[iris[i].species] += 1;
-        }
+        iris.forEach(observation => speciesCounts[observation.species] += 1)
 
         //
-        // count how many in each cluster as a percent of total species
+        // count how many of each species in each cluster
         //
-        const clusterComposition = []
-        for(let i = 0; i < k; i += 1) {
-            const cluster = clusters[i];
+        const clusterCompositions = clusters.map(c => {
             const composition = {'setosa': 0, 'versicolor': 0, 'virginica': 0};
-            for(let j = 0; j < cluster.length; j += 1) {
-                const species = iris[cluster[j]].species;
-                composition[species] += 1;
-            }
-            clusterComposition[i] = composition;
-        }
-
-        // const clusterComposition = clusters.map(c => c.reduce((a, v) => a[iris[v].species] += 1), {'setosa': 0, 'versicolor': 0, 'virginica': 0})
+            c.forEach(observationIndex => composition[iris[observationIndex].species] += 1 );
+            return composition;
+        });
 
         //
         // turn counts into percentages
         //
-        // for(let i = 0; i < k; i += 1) {
-        //     for(let j = 0; j < species.length; j += 1) {
-        //         const percent = clusterComposition[i][species[j]] / speciesCounts[species[j]];
-        //         clusterComposition[i][species[j]] = percent;
-        //     }
-        // }
-        //
-        return clusterComposition.map(c => ({
-            'setosa': c.setosa / speciesCounts.setosa,
-            'versicolor': c.versicolor / speciesCounts.versicolor,
-            'virginica': c.virginica / speciesCounts.virginica}));
+        return clusterCompositions.map(clusterComposition => ({
+            'setosa': clusterComposition.setosa / speciesCounts.setosa,
+            'versicolor': clusterComposition.versicolor / speciesCounts.versicolor,
+            'virginica': clusterComposition.virginica / speciesCounts.virginica}));
     }
 
     /**
-     * @public
-     * Load iris dataset and run kmeans on it given the number of clusters
+     * plot the clustred iris data model.
      * 
-     * @param {integer} k number of clusters to create
+     * @param {object} model with observations, centroids and assignments
+     * @param {boolean} showClusterColor true to show learned cluster points
+     * @param {boolean} showSpeciesColor true to show known dataset labelled points
      */
     function plot(model, showClusterColor, showSpeciesColor) {
 
