@@ -10,6 +10,7 @@
  *   distanceSquared(p, q),
  *   centroidsConverged(delta)
  *   assignmentsConverged(model, newModel)
+ *   assignmentsToClusters(model)
  */
 define(function () {
     "use strict";
@@ -264,6 +265,32 @@ define(function () {
         
         return arraysEqual(model.assignments, newModel.assignments);
     }
+
+    /**
+     * Use the model assignments to create
+     * array of observation indices for each centroid
+     * 
+     * @param {object} model with observations, centroids and assignments
+     * @reutrn [[number]] array of observation indices for each cluster
+     */
+    function assignmentsToClusters(model) {
+        // 
+        // put offset of each data points into clusters using the assignments
+        //
+        const n = model.observations.length;
+        const k = model.centroids.length;
+        const assignments = model.assignments;
+        const clusters = [];
+        for(let i = 0; i < k; i += 1) {
+            clusters.push([])
+        }
+        for(let i = 0; i < n; i += 1) {
+            clusters[assignments[i]].push(i);
+        }
+
+        return clusters;
+    }
+
     
     //
     // return public methods
@@ -273,7 +300,8 @@ define(function () {
         'distance': distance,
         'distanceSquared': distanceSquared,
         'centroidsConverged': centroidsConverged,
-        'assignmentsConverged': assignmentsConverged
+        'assignmentsConverged': assignmentsConverged,
+        "assignmentsToClusters": assignmentsToClusters
     };
 
 });

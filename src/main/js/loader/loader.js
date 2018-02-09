@@ -195,7 +195,6 @@ com.lumpofcode.loader = function() {
             throw Error("module at path(" + path + ") is already loaded." );
         }
         modules[path] = module;
-
     }
 
     /**
@@ -227,20 +226,42 @@ com.lumpofcode.loader = function() {
      * 
      * @param {string} path relative path to module being required
      */
-    function bind(path) {
-        path = resolveRequirePath(path);
-
-        if(typeof modules[path] === 'undefined') {
-            throw Error("module at path(" + path + ") is not loaded." );
+    function bind(paths, andThen) {
+        function bindOne(path) {
+            path = resolveRequirePath(path);
+    
+            if(typeof modules[path] === 'undefined') {
+                throw Error("module at path(" + path + ") is not loaded." );
+            }
+    
+            if(typeof bindings[path] === 'undefined') {
+                bindingStack.unshift(path); // push module being bound onto the stack
+                bindings[path] = modules[path](bind);   // bind the module
+                bindingStack.shift();       // pop module, we are done binding it
+            }
+    
+            if(andThen) {
+                andThen(bindings[path]);
+            }
+    
+            return bindings[path];
         }
 
-        if(typeof bindings[path] === 'undefined') {
-            bindingStack.unshift(path); // push module being bound onto the stack
-            bindings[path] = modules[path](bind);   // bind the module
-            bindingStack.shift();       // pop module, we are done binding it
-        }
+        if(Array.isArray(paths)) {
+            const bindings = [];
 
-        return bindings[path];
+            for(let i = 0; i < paths.length; i += 1) {
+                bindings.push(bindOne(paths[i]));
+            }
+
+            if(andThen) {
+                andThen.apply(this, bindings);
+            }
+
+        } else {
+            return bindOne(paths);
+        }
+    
     }
 
     return {'load': load, 'bind': bind};

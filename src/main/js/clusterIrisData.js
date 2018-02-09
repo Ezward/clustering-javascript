@@ -30,35 +30,10 @@ define(function (require) {
         // const initialModel = kmeanspp(observations, k);
         const results = kmeans.cluster(initialModel);
 
-        results.clusters = assignmentsToClusters(results.model);
+        results.clusters = kmeans.assignmentsToClusters(results.model);
         results.clusterCompositions = measureClusterCompositions(results.clusters);
 
         return results;
-    }
-
-    /**
-     * Use the model assignments to create
-     * array of observation indices for each centroid
-     * 
-     * @param {object} model with observations, centroids and assignments
-     * @reutrn [[number]] array of observation indices for each cluster
-     */
-    function assignmentsToClusters(model) {
-        // 
-        // put offset of each data points into clusters using the assignments
-        //
-        const n = model.observations.length;
-        const k = model.centroids.length;
-        const assignments = model.assignments;
-        const clusters = [];
-        for(let i = 0; i < k; i += 1) {
-            clusters.push([])
-        }
-        for(let i = 0; i < n; i += 1) {
-            clusters[assignments[i]].push(i);
-        }
-
-        return clusters;
     }
 
     /**
@@ -78,7 +53,7 @@ define(function (require) {
      */
     function measureClusterCompositions(clusters) {
         //
-        // count number of each species using labels given in the dataset
+        // count total number of each species using labels given in the dataset
         //
         const speciesCounts = {'setosa': 0, 'versicolor': 0, 'virginica': 0};
         iris.forEach(observation => speciesCounts[observation.species] += 1)
@@ -96,23 +71,25 @@ define(function (require) {
         // turn counts into percentages
         //
         return clusterCompositions.map(clusterComposition => ({
-            'setosa': clusterComposition.setosa / speciesCounts.setosa,
-            'versicolor': clusterComposition.versicolor / speciesCounts.versicolor,
-            'virginica': clusterComposition.virginica / speciesCounts.virginica}));
+            'setosa': {count: clusterComposition.setosa, percent: clusterComposition.setosa / speciesCounts.setosa},
+            'versicolor': {count: clusterComposition.versicolor, percent: clusterComposition.versicolor / speciesCounts.versicolor},
+            'virginica': {count: clusterComposition.virginica, percent: clusterComposition.virginica / speciesCounts.virginica}
+        }));
     }
 
     /**
      * plot the clustred iris data model.
      * 
-     * @param {object} model with observations, centroids and assignments
+     * @param {object} results of cluster(), with model, clusters and clusterCompositions
      * @param {boolean} showClusterColor true to show learned cluster points
      * @param {boolean} showSpeciesColor true to show known dataset labelled points
      */
-    function plot(model, showClusterColor, showSpeciesColor) {
+    function plot(canvas, results, showClusterColor, showSpeciesColor) {
 
         //
         // map iris data rows from dictionary to vector (array), leaving out the label
         //
+        const model = results.model;
         const observations = model.observations;
         const assignments = model.assignments;
         const centroids = model.centroids;
@@ -122,8 +99,8 @@ define(function (require) {
         // 
         // put offset of each data points into clusters using the assignments
         //
-        const clusters = assignmentsToClusters(model);
-        const clusterCompositions = measureClusterCompositions(clusters);
+        const clusters = results.clusters;
+        const clusterCompositions = results.clusterCompositions;
 
         console.log(JSON.stringify(clusterCompositions));
 
@@ -133,12 +110,12 @@ define(function (require) {
         const clusterColor = ['red', 'green', 'blue', 'yellow', 'purple', 'cyan', 'magenta'];
         const speciesColor = {'setosa': 'cyan', 'versicolor': 'yellow', 'virginica': 'magenta'};
         const species = ['setosa', 'versicolor', 'virginica'];
-        const canvas = document.querySelector("#container canvas");
+
         const chart = new Chart(canvas, {
             type: 'scatter',
             data: {
                 // for the purposes of plotting in 2 dimensions, we will use 
-                // x = sepalLength and y = sepalWidth, so map the 
+                // x = sepalLength and y = sepalWidth 
                 datasets: clusters.map(function(c, i) { 
                     return {
                         label: showClusterColor ? ("cluster" + i) : (showSpeciesColor ? species[i] : undefined),
@@ -154,7 +131,80 @@ define(function (require) {
                 maintainAspectRatio: false,
                 title: {
                     display: true,
-                    text: 'Iris data set clustered using K-Means'
+                    text: showClusterColor ? 'Iris data set clustered using K-Means (k=$k)'.replace('$k', k) : "Iris data set"
+                },
+                legend: {
+                    position: 'bottom',
+                    display: true
+                },
+                scales: {
+                    xAxes: [{
+                        type: 'linear',
+                        position: 'bottom',
+                        scaleLabel: {
+                            labelString: 'sepal length in cm',
+                            display: true,
+                        }
+                    }],
+                    yAxes: [{
+                        type: 'linear',
+                        position: 'left',
+                        scaleLabel: {
+                            labelString: 'sepal width in cm',
+                            display: true
+                        }
+                    }]
+                },
+                tooltips: {
+                    callbacks: {
+                        label: (tooltipItem, data) => 
+                            (iris[clusters[tooltipItem.datasetIndex][tooltipItem.index]].species 
+                                + ": [x, y]".replace("x", tooltipItem.xLabel).replace("y", tooltipItem.yLabel)),
+                        labelColor: (tooltipItem, data) => ({'backgroundColor': speciesColor[iris[clusters[tooltipItem.datasetIndex][tooltipItem.index]].species]})
+                    }
+                }
+            }
+        });
+    }
+
+    /**
+     * plot the clustred iris data model.
+     * 
+     * @param {object} results of cluster(), with model, clusters and clusterCompositions
+     * @param {boolean} showClusterColor true to show learned cluster points
+     * @param {boolean} showSpeciesColor true to show known dataset labelled points
+     */
+    function plotIrisLabels(canvas) {
+        //
+        // plot the unclustered iris data using the given species labels
+        //
+        const speciesColor = {'setosa': 'cyan', 'versicolor': 'yellow', 'virginica': 'magenta'};
+        const species = ['setosa', 'versicolor', 'virginica'];
+
+        // for the purposes of plotting in 2 dimensions, we will use 
+        // x = sepalLength and y = sepalWidth 
+        const datasets = species.map(function(value) { 
+            return {
+                label: value,
+                data: iris.filter(x => x.species === value).map(v => ({'x': v['sepalLength'], 'y': v['sepalWidth']})),
+                backgroundColor: speciesColor[value],
+                pointBackgroundColor: speciesColor[value],
+                pointBorderColor: speciesColor[value]
+            };
+        })
+
+        const chart = new Chart(canvas, {
+            type: 'scatter',
+            data: {
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                title: {
+                    display: true,
+                    text: "Iris data set"
                 },
                 legend: {
                     position: 'bottom',
@@ -178,10 +228,58 @@ define(function (require) {
                         }
                     }]
                 }
+                // tooltips: {
+                //     callbacks: {
+                //         label: (tooltipItem, data) => 
+                //             (iris[tooltipItem.index].species 
+                //                 + ": [x, y]".replace("x", tooltipItem.xLabel).replace("y", tooltipItem.yLabel)),
+                //         labelColor: (tooltipItem, data) => ({'backgroundColor': speciesColor[iris[tooltipItem.index].species]})
+                //     }
+                // }
             }
         });
     }
 
-    return {'cluster': cluster, 'plot': plot};
+    function plotClusterComposition(canvas, results) {
+
+        //
+        // plot the unclustered iris data using the given species labels
+        //
+        const clusterCompositions = results.clusterCompositions;
+        const k = clusterCompositions.length;
+        const speciesColor = {'setosa': 'cyan', 'versicolor': 'yellow', 'virginica': 'magenta'};
+        const species = ['setosa', 'versicolor', 'virginica'];
+
+        const datasets = species.map((sp, i) => ({
+                label: sp,
+                data: clusterCompositions.map(cc => cc[sp].count),
+                backgroundColor: speciesColor[sp]
+        }));
+
+        const chartConfig = {
+            type: 'bar',
+            data: {
+                labels: clusterCompositions.map((cc, i) => "cluster" + i),
+                datasets: datasets,    
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                title: {
+                    display: true,
+                    text: "KMeans cluster composition (k=$k), Iris data set".replace("$k", k)
+                },
+                legend: {
+                    position: 'bottom',
+                    display: true
+                },
+            }
+        };
+
+        const chart = new Chart(canvas, chartConfig);
+
+    }
+
+    return {'cluster': cluster, 'plot': plot, 'plotIrisLabels': plotIrisLabels, 'plotClusterComposition': plotClusterComposition};
 });
 
