@@ -227,6 +227,10 @@ com.lumpofcode.loader = function() {
      * @param {string} path relative path to module being required
      */
     function bind(paths, andThen) {
+
+        //
+        // bind a single path
+        //
         function bindOne(path) {
             path = resolveRequirePath(path);
     
@@ -239,15 +243,17 @@ com.lumpofcode.loader = function() {
                 bindings[path] = modules[path](bind);   // bind the module
                 bindingStack.shift();       // pop module, we are done binding it
             }
-    
-            if(andThen) {
-                andThen(bindings[path]);
-            }
-    
+        
             return bindings[path];
         }
 
+        //
+        // if passed an array, then we are in async mode.
+        // resolve each binding, then call the callback
+        // passing the bindings as the arguments
+        //
         if(Array.isArray(paths)) {
+            // async mode, array of paths
             const bindings = [];
 
             for(let i = 0; i < paths.length; i += 1) {
@@ -255,10 +261,12 @@ com.lumpofcode.loader = function() {
             }
 
             if(andThen) {
+                // send bound modules as arguments to callback
                 andThen.apply(this, bindings);
             }
 
         } else {
+            // synchonous mode, one path
             return bindOne(paths);
         }
     
