@@ -13,4 +13,4 @@ requirejs.config({
 });
 
 // load the application.
-requirejs(['app/main']);
+requirejs(['app/kmeansRandomMain']);
