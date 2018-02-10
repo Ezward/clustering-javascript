@@ -89,7 +89,6 @@ define(function (require) {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                animation: false,
                 title: {
                     display: true,
                     text: 'Random spherical data set (d=$d, n=$n) clustered using K-Means (k=$k)'

@@ -1,0 +1,69 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+
+    <title>K-Means in JavaScript, randomly generated data</title>
+    <meta name="description" content="K-Means in JavaScript, randomly generated data">
+    <meta name="author" content="Ezward">
+
+    <!-- third party includes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
+
+    <style>
+        .container
+        {
+            position: absolute;
+            top: 5%;
+            left: 5%;
+            bottom: 5%;
+            right: 5%;
+        }
+
+        .container canvas
+        {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls
+        {
+            position: absolute;
+            top: 2%;
+            left: 5%;
+        }
+
+        .hidden 
+        {
+            visibility: hidden;
+        }
+
+
+    </style>
+
+</head>
+<body>
+
+    <div id="container" class="container">
+        <canvas></canvas>
+    </div>
+
+    <!-- bootstrap application with requirejs -->
+    <!-- <script data-main="requireConfig.js" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.5/require.js"></script> -->
+
+    <!-- either user requirejs (above) OR these script tags, but not both -->
+    <!-- bootstrap with explicit script tags so 'view source' works -->
+    <script data-root="src/main/js" src="src/main/js/loader/loader.js" ></script>
+    <script src="src/main/js/kmeans/kmeans.js" ></script>
+    <script src="src/main/js/kmeans/kmeanspp.js" ></script>
+    <script src="src/main/js/kmeans/randomCentroidInitializer.js" ></script>
+    <script src="src/main/js/kmeans/kmeansRandomModel.js" ></script>
+    <script src="src/main/js/clusterRandomData.js" ></script>
+    <script src="src/main/js/kmeansrandom.js" onload="require('./kmeansrandom')"></script>
+
+</body>
+
+</html>

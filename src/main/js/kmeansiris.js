@@ -17,12 +17,4 @@ define(function (require) {
         clusterIrisData.plotIrisLabels(document.querySelector("#container2 canvas"));
         clusterIrisData.plotClusterComposition(document.querySelector("#container3 canvas"), results)    
     });
-
-    //
-    // cluster random data
-    //
-    require(["./clusterRandomData"], function(clusterRandomData) {
-        const randomResults = clusterRandomData.cluster(5, 10000, 2);
-        clusterRandomData.plot(document.querySelector("#container4 canvas"), randomResults);
-    });
 });

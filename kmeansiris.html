@@ -50,7 +50,6 @@
         <option value="container">Iris Dataset Clustered with KMeans</option>
         <option value="container2">Iris Dataset True Labels</option>
         <option value="container3">Iris Dataset Cluster Composition with KMeans</option>
-        <option value="container4">Random Spherical Data Clustered with KMeans</option>
     </select>
 
     <div id="container" class="container">
@@ -61,9 +60,6 @@
     </div>
     <div id = "container3" class="container hidden">
             <canvas></canvas>
-    </div>
-    <div id = "container4" class="container hidden">
-        <canvas></canvas>
     </div>
 
     <!-- bootstrap application with requirejs -->
@@ -78,8 +74,7 @@
     <script src="src/main/js/kmeans/randomCentroidInitializer.js" ></script>
     <script src="src/main/js/kmeans/kmeansRandomModel.js" ></script>
     <script src="src/main/js/clusterIrisData.js" ></script>
-    <script src="src/main/js/clusterRandomData.js" ></script>
-    <script src="src/main/js/main.js" onload="require('./main')"></script>
+    <script src="src/main/js/kmeansiris.js" onload="require('./kmeansiris')"></script>
 
     <script>
         function showPlot(container) {
