@@ -41,6 +41,8 @@ define(function (require) {
         return results;
     }
 
+    const clusterColor = ['red', 'green', 'blue', 'yellow', 'purple', 'cyan', 'magenta', 'pink', 'brown', 'black'];
+    let chart = undefined;
 
     /**
      * plot the clustred iris data model.
@@ -70,56 +72,66 @@ define(function (require) {
         //
         // plot the clusters
         //
-        const clusterColor = ['red', 'green', 'blue', 'yellow', 'purple', 'cyan', 'magenta'];
-        const chart = new Chart(canvas, {
-            type: 'scatter',
-            data: {
-                // for the purposes of plotting in 2 dimensions, we will use 
-                // x = dimension 0 and y = dimension 1 
-                datasets: clusters.map(function(c, i) { 
-                    return {
-                        label: "cluster" + i,
-                        data: c.map(d => ({'x': observations[d][0], 'y': observations[d][1]})),
-                        backgroundColor: clusterColor[i % clusterColor.length],
-                        pointBackgroundColor: clusterColor[i % clusterColor.length],
-                        pointBorderColor:  clusterColor[i % clusterColor.length]
-                    };
-                })
+        const chartData = {
+            // for the purposes of plotting in 2 dimensions, we will use 
+            // x = dimension 0 and y = dimension 1 
+            datasets: clusters.map(function(c, i) { 
+                return {
+                    label: "cluster" + i,
+                    data: c.map(d => ({'x': observations[d][0], 'y': observations[d][1]})),
+                    backgroundColor: clusterColor[i % clusterColor.length],
+                    pointBackgroundColor: clusterColor[i % clusterColor.length],
+                    pointBorderColor:  clusterColor[i % clusterColor.length]
+                };
+            })
+        };
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            title: {
+                display: true,
+                text: 'Random spherical data set (d=$d, n=$n) clustered using K-Means (k=$k)'
+                        .replace("$d", d)
+                        .replace('$n', n)
+                        .replace('$k', k)
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                title: {
-                    display: true,
-                    text: 'Random spherical data set (d=$d, n=$n) clustered using K-Means (k=$k)'
-                            .replace("$d", d)
-                            .replace('$n', n)
-                            .replace('$k', k)
-                },
-                legend: {
+            legend: {
+                position: 'bottom',
+                display: true
+            },
+            scales: {
+                xAxes: [{
+                    type: 'linear',
                     position: 'bottom',
-                    display: true
-                },
-                scales: {
-                    xAxes: [{
-                        type: 'linear',
-                        position: 'bottom',
-                        scaleLabel: {
-                            labelString: 'x axis',
-                            display: false,
-                        }
-                    }],
-                    yAxes: [{
-                        type: 'linear',
-                        position: 'left',
-                        scaleLabel: {
-                            labelString: 'y axis',
-                            display: false
-                        }
-                    }]
-                }
+                    scaleLabel: {
+                        labelString: 'x axis',
+                        display: false,
+                    }
+                }],
+                yAxes: [{
+                    type: 'linear',
+                    position: 'left',
+                    scaleLabel: {
+                        labelString: 'y axis',
+                        display: false
+                    }
+                }]
             }
+        };
+
+        //
+        // we need to destroy the previous chart so it's interactivity 
+        // does not continue to run
+        //
+        if(undefined !== chart) {
+            chart.destroy()
+        } 
+        chart = new Chart(canvas, {
+            type: 'scatter',
+            data: chartData,
+            options: chartOptions,
         });
+
     }
 
     return {'cluster': cluster, 'plot': plot};

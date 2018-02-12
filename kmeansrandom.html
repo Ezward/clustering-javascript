@@ -45,13 +45,28 @@
     </style>
 
 </head>
-<body>
+<body onKeyUp="onKey(event)">
+    <div id="controls" class="controls">
+        <button class="reset" onclick="require('./kmeansRandomMain')()">Recalculate</button>
+        <span>k=</span><input name="kEdit" type="number" value="6" min="2" max="10" />
+        <span>n=</span><input name="nEdit" type="number" value="1000" min="10" max="30000" />
+        <span>d=</span><input name="dEdit" type="number" value="2" min="2" max="100" />
+    </div>
 
     <div id="container" class="container">
         <canvas></canvas>
     </div>
 
-    <!-- bootstrap application with requirejs -->
+    <script>
+        function recalculate() {
+            require('./kmeansRandomMain')();
+        }
+        function onKey(e) {
+            if(e.keyCode===13) recalculate();
+        }
+    </script>
+    
+        <!-- bootstrap application with requirejs -->
     <!-- <script data-main="kmeansRandomRequireConfig.js" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.5/require.js"></script> -->
 
     <!-- either user requirejs (above) OR these script tags, but not both -->
@@ -62,7 +77,7 @@
     <script src="src/main/js/kmeans/randomCentroidInitializer.js" ></script>
     <script src="src/main/js/kmeans/kmeansRandomModel.js" ></script>
     <script src="src/main/js/kmeansRandomApp.js" ></script>
-    <script src="src/main/js/kmeansRandomMain.js" onload="require('./kmeansRandomMain')"></script>
+    <script src="src/main/js/kmeansRandomMain.js" onload="recalculate()"></script>
 
 </body>
 

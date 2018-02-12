@@ -7,8 +7,16 @@ define(function (require) {
     //
     // cluster random data
     //
-    require(["./kmeansRandomApp"], function(kmeansRandomApp) {
-        const randomResults = kmeansRandomApp.cluster(5, 10000, 2);
-        kmeansRandomApp.plot(document.querySelector("#container canvas"), randomResults);
-    });
+    return function() {
+        require(["./kmeansRandomApp"], function(kmeansRandomApp) {
+            //
+            // get values from controls
+            //
+            const k = document.querySelector(".controls input[name=kEdit]").value;
+            const n = document.querySelector(".controls input[name=nEdit]").value;
+            const d = document.querySelector(".controls input[name=dEdit]").value;
+            const randomResults = kmeansRandomApp.cluster(k, n, d);
+            kmeansRandomApp.plot(document.querySelector("#container canvas"), randomResults);
+        });
+    };
 });
