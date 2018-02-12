@@ -2,6 +2,11 @@
 //
 // uses requirejs modules
 //
+
+/**
+ * module to create an initial model from observations
+ * using random centroid initialization.
+ */
 define(function () {
     "use strict";
 

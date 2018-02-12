@@ -1,6 +1,13 @@
 //
 // uses requirejs modules
 //
+
+/**
+ * Application to cluster random data using kmeans++
+ * 
+ * cluster(k, n, d) - cluster n data points of dimension d into k clusters
+ * plot(canvas, result) - plot the results of cluster() to the given html5 canvas using clusterjs
+ */
 define(function (require) {
     "use strict";
     const kmeans = require("./kmeans/kmeans");

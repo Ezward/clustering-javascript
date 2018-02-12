@@ -1,6 +1,17 @@
 //
 // uses requirejs modules
 //
+
+/**
+ * application to cluster the Iris data set using kmeans
+ * 
+ * cluster(k) - learn k clusters from the Iris dataset
+ * measureClusterCompositions(clusters) - calculate the count and percentage that each labelled species takes in each learned cluster
+ * plot(canvas, results) - plot the results of cluster(k) onto the given canvas
+ * plotIrisLabels(canvas) - plot the true iris labelled data
+ * plotClusterComposition(canvas, results) - plot the results of measureClusterCompositions(clusters) to the given canvas as a bar chart
+ * 
+ */
 define(function (require) {
     "use strict";
     const iris = require("./dataset/iris");

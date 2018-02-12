@@ -1,6 +1,10 @@
 //
 // uses requirejs modules
 //
+
+/**
+ * module for creating random models for kmeans clustering
+ */
 define(function (require) {
     "use strict";
 

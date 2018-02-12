@@ -1,6 +1,10 @@
 //
 // uses requirejs modules
 //
+
+/**
+ * kmeans++ initialization module
+ */
 define(function (require) {
     "use strict";
 
