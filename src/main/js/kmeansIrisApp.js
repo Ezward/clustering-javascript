@@ -88,6 +88,15 @@ define(function (require) {
         }));
     }
 
+    const clusterColor = ['red', 'green', 'blue', 'yellow', 'purple', 'cyan', 'magenta'];
+    const speciesColor = {'setosa': 'cyan', 'versicolor': 'yellow', 'virginica': 'magenta'};
+    const species = ['setosa', 'versicolor', 'virginica'];
+
+    let chart = undefined;
+    let irisChart = undefined;
+    let compositionChart = undefined;
+
+
     /**
      * plot the clustred iris data model.
      * 
@@ -118,63 +127,67 @@ define(function (require) {
         //
         // plot the clusters
         //
-        const clusterColor = ['red', 'green', 'blue', 'yellow', 'purple', 'cyan', 'magenta'];
-        const speciesColor = {'setosa': 'cyan', 'versicolor': 'yellow', 'virginica': 'magenta'};
-        const species = ['setosa', 'versicolor', 'virginica'];
+        const chartData = {
+            // for the purposes of plotting in 2 dimensions, we will use 
+            // x = sepalLength and y = sepalWidth 
+            datasets: clusters.map(function(c, i) { 
+                return {
+                    label: showClusterColor ? ("cluster" + i) : (showSpeciesColor ? species[i] : undefined),
+                    data: c.map(d => ({'x': observations[d][0], 'y': observations[d][1]})),
+                    backgroundColor: showClusterColor ? clusterColor[i % clusterColor.length] : (showSpeciesColor ? speciesColor[species[i]] : undefined),
+                    pointBackgroundColor: showClusterColor ? clusterColor[i % clusterColor.length] : (showSpeciesColor ? c.map(d => speciesColor[iris[d]['species']]) : 'white'),
+                    pointBorderColor: showClusterColor ? clusterColor[i % clusterColor.length] : (showSpeciesColor ? c.map(d => speciesColor[iris[d]['species']]) : 'white')
+                };
+            })
+        };
 
-        const chart = new Chart(canvas, {
-            type: 'scatter',
-            data: {
-                // for the purposes of plotting in 2 dimensions, we will use 
-                // x = sepalLength and y = sepalWidth 
-                datasets: clusters.map(function(c, i) { 
-                    return {
-                        label: showClusterColor ? ("cluster" + i) : (showSpeciesColor ? species[i] : undefined),
-                        data: c.map(d => ({'x': observations[d][0], 'y': observations[d][1]})),
-                        backgroundColor: showClusterColor ? clusterColor[i % clusterColor.length] : (showSpeciesColor ? speciesColor[species[i]] : undefined),
-                        pointBackgroundColor: showClusterColor ? clusterColor[i % clusterColor.length] : (showSpeciesColor ? c.map(d => speciesColor[iris[d]['species']]) : 'white'),
-                        pointBorderColor: showClusterColor ? clusterColor[i % clusterColor.length] : (showSpeciesColor ? c.map(d => speciesColor[iris[d]['species']]) : 'white')
-                    };
-                })
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            title: {
+                display: true,
+                text: showClusterColor ? 'Iris data set clustered using K-Means (k=$k)'.replace('$k', k) : "Iris data set"
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                title: {
-                    display: true,
-                    text: showClusterColor ? 'Iris data set clustered using K-Means (k=$k)'.replace('$k', k) : "Iris data set"
-                },
-                legend: {
+            legend: {
+                position: 'bottom',
+                display: true
+            },
+            scales: {
+                xAxes: [{
+                    type: 'linear',
                     position: 'bottom',
-                    display: true
-                },
-                scales: {
-                    xAxes: [{
-                        type: 'linear',
-                        position: 'bottom',
-                        scaleLabel: {
-                            labelString: 'sepal length in cm',
-                            display: true,
-                        }
-                    }],
-                    yAxes: [{
-                        type: 'linear',
-                        position: 'left',
-                        scaleLabel: {
-                            labelString: 'sepal width in cm',
-                            display: true
-                        }
-                    }]
-                },
-                tooltips: {
-                    callbacks: {
-                        label: (tooltipItem, data) => 
-                            (iris[clusters[tooltipItem.datasetIndex][tooltipItem.index]].species 
-                                + ": [x, y]".replace("x", tooltipItem.xLabel).replace("y", tooltipItem.yLabel)),
-                        labelColor: (tooltipItem, data) => ({'backgroundColor': speciesColor[iris[clusters[tooltipItem.datasetIndex][tooltipItem.index]].species]})
+                    scaleLabel: {
+                        labelString: 'sepal length in cm',
+                        display: true,
                     }
+                }],
+                yAxes: [{
+                    type: 'linear',
+                    position: 'left',
+                    scaleLabel: {
+                        labelString: 'sepal width in cm',
+                        display: true
+                    }
+                }]
+            },
+            tooltips: {
+                callbacks: {
+                    label: (tooltipItem, data) => 
+                        (iris[clusters[tooltipItem.datasetIndex][tooltipItem.index]].species 
+                            + ": [x, y]".replace("x", tooltipItem.xLabel).replace("y", tooltipItem.yLabel)),
+                    labelColor: (tooltipItem, data) => ({'backgroundColor': speciesColor[iris[clusters[tooltipItem.datasetIndex][tooltipItem.index]].species]})
                 }
             }
+        };
+
+        // destroy previous chart so it's interactivity is removed
+        if(undefined !== chart) {
+            chart.destroy();
+        }
+        chart = new Chart(canvas, {
+            type: 'scatter',
+            data: chartData,
+            options: chartOptions
         });
     }
 
@@ -204,7 +217,13 @@ define(function (require) {
             };
         })
 
-        const chart = new Chart(canvas, {
+        //
+        // remove previous chart before creating new one
+        //
+        if(undefined !== irisChart) {
+            irisChart.destroy();
+        }
+        irisChart = new Chart(canvas, {
             type: 'scatter',
             data: {
                 datasets: datasets
@@ -212,7 +231,6 @@ define(function (require) {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                animation: false,
                 title: {
                     display: true,
                     text: "Iris data set"
@@ -239,14 +257,6 @@ define(function (require) {
                         }
                     }]
                 }
-                // tooltips: {
-                //     callbacks: {
-                //         label: (tooltipItem, data) => 
-                //             (iris[tooltipItem.index].species 
-                //                 + ": [x, y]".replace("x", tooltipItem.xLabel).replace("y", tooltipItem.yLabel)),
-                //         labelColor: (tooltipItem, data) => ({'backgroundColor': speciesColor[iris[tooltipItem.index].species]})
-                //     }
-                // }
             }
         });
     }
@@ -287,7 +297,13 @@ define(function (require) {
             }
         };
 
-        const chart = new Chart(canvas, chartConfig);
+        //
+        // remove previous chart before creating a new one
+        //
+        if(undefined !== compositionChart) {
+            compositionChart.destroy()
+        }
+        compositionChart = new Chart(canvas, chartConfig);
 
     }
 
