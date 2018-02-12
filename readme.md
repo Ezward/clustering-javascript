@@ -1,7 +1,8 @@
 # K-Means Clustering in JavaScript
 
 An implementation of the kmeans and kmeans++ algorithms in JavaScript.  Examples use the Iris data set and a random data generator.
-
+[KMeans on the Iris Data Set](https://ezward.github.io/kmeans-javascript/kmeansiris.html)
+[KMeans on randomly generated data](https://ezward.github.io/kmeans-javascript/kmeansrandom.html)
 
 ### Dataset
 * dataset/iris.js - the Iris data set in json format.
