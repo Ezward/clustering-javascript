@@ -59,7 +59,7 @@
 
     <script>
         function recalculate() {
-            require('./kmeansRandomMain')();
+            require('./kmeansRandomMain');
         }
         function onKey(e) {
             if(e.keyCode===13) recalculate();
@@ -72,6 +72,7 @@
     <!-- either user requirejs (above) OR these script tags, but not both -->
     <!-- bootstrap with explicit script tags so 'view source' works -->
     <script data-root="src/main/js" src="src/main/js/loader/loader.js" ></script>
+    <script src="src/main/js/distance/euclideanDistance.js" ></script>
     <script src="src/main/js/kmeans/kmeans.js" ></script>
     <script src="src/main/js/kmeans/kmeanspp.js" ></script>
     <script src="src/main/js/kmeans/randomCentroidInitializer.js" ></script>

@@ -187,8 +187,8 @@ com.lumpofcode.loader = function() {
         // directory is the root.
         //
         if(typeof moduleRoot === 'string') {
-            path = replaceAtStart(path, moduleRoot, ".");
-            path = replaceAtEnd(path, ".js", "");
+            path = replaceAtStart(path, moduleRoot, "");    // remove module root
+            path = replaceAtEnd(path, ".js", "");           // remove extension
         }
 
         if(typeof modules[path] !== 'undefined') {
@@ -204,20 +204,41 @@ com.lumpofcode.loader = function() {
      * @param {string} path relative path to module being required
      */
     function resolveRequirePath(path) {
-        if(!path.startsWith("./")) {
-            return path;    // it's an absolute path
+        if(path.startsWith("/")) {
+            return path;    // it's an abolute path from module root
+        }
+        if(!path.startsWith(".")) {
+            return "/lib/" + path;    // it's an absolute path from library root
         }
 
         //
-        // it's relative the module that is loading it,
-        // so get the path from the binding stack
+        // split require path into component folder names;
+        // this may include relative folders (. or ..)
         //
-        const dependantPath = (bindingStack.length > 0) ? bindingStack[0] : "./";
-        const parts = dependantPath.split("/");    // make it an array
-        parts.pop();       // remove the dependant module name
-        parts.push(replaceAtStart(path, "./", ""));  // add require to path
+        pathParts = path.split("/");
 
-        return parts.join("/");
+        //
+        // the require path is relative the module that is loading it (that depends upon,
+        // so get the dependant module's path from the binding stack,
+        // and use it to build the full module bind path
+        //
+        const dependantPath = (bindingStack.length > 0) ? bindingStack[0] : "";
+        const dependandParts = dependantPath.split("/");    // make it an array
+        dependandParts.pop();       // remove the dependant module name to get current director
+
+        //
+        // process any relative path parts as start of path
+        //
+        while((pathParts.length != 0) && ((pathParts[0] === ".") || (pathParts[0] === ".."))) {
+            if(pathParts[0] === "..") {
+                dependandParts.pop();      // back up in relative path
+            }    
+            pathParts.shift();  // remove .. or .
+        }
+
+
+        const modulePath =  dependandParts.join("/") + "/" + pathParts.join("/");
+        return modulePath;
     }
 
     /**

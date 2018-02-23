@@ -12,8 +12,10 @@
  *   assignmentsConverged(model, newModel)
  *   assignmentsToClusters(model)
  */
-define(function () {
+define(function (require) {
     "use strict";
+
+    const euclidean = require("../distance/euclideanDistance");
     
     /**
      * @public
@@ -24,15 +26,7 @@ define(function () {
      * @return {number} the distance between p and q squared
      */
     function distanceSquared(p, q) {
-        const d = p.length; // dimension of vectors
-
-        if(d !== q.length) throw Error("p and q vectors must be the same length")
-
-        let sum = 0;
-        for(let i = 0; i < d; i += 1) {
-            sum += (p[i] - q[i])**2
-        }
-        return sum;
+        return euclidean.distanceSquared(p, q);
     }
 
     /**
@@ -44,7 +38,7 @@ define(function () {
      * @return the distance between vectors p and q
      */
     function distance(p, q) {
-        return Math.sqrt(distanceSquared(p, q));
+        return euclidean.distance(p, q);
     }
 
     /**
