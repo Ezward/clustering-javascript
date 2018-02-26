@@ -43,43 +43,6 @@ define(function () {
             return neighbors;
         }
 
-        /**
-         * Given a cluster and a point in the cluster,
-         * if the point is a core point (has >= min neighbors)
-         * then add any neighbors of that core point to 
-         * the cluster, unless they are already in a cluster.
-         * 
-         * @param {*} clusterIndex zero based index of cluster 
-         * @param {*} index index of point in observations that is part of cluster
-         * @param {*} clusterPoints are the points in the cluster 
-         */
-        function expandCluster(clusterIndex, index, clusterPoints) {
-            //
-            // find neighbors of this point
-            //
-            const neighbors = rangeQuery(index);
-            const neighborCount = neighbors.length;
-            if(neighborCount >= minimumPoints) {
-                //
-                // this point is a core point.
-                // add any of it's neighbors to the cluster
-                // if they are not already in a cluster
-                //
-                for(let i = 0; i < neighborCount; i += 1) {
-                    //
-                    // if the neighbor is not yet classified, then add it to the cluster.
-                    // if the neighbor was an outlier, then assign it to the cluster
-                    //
-                    const observationIndex = neighbors[i];
-                    switch(assignments[observationIndex]) {
-                        case undefined: clusterPoints.push(observationIndex);            // fall through, so it is assignmentsled to this cluster
-                        case NOISE: assignments[observationIndex] = clusterIndex; break; // outlier is now part of this cluster
-                    }
-
-                }
-            }
-        }
-
         let clusterIndex = 0;
 
         for(let i = 0; i < n; i += 1) {
@@ -100,17 +63,42 @@ define(function () {
                     // and it's neighbors are part of it's cluster
                     //
                     assignments[i] = clusterIndex;
-                    for(let j = 0; j < neighbors.length; j += 1) {
-                        assignments[neighbors[j]] = clusterIndex;
-                    }
+                    while(neighbors.length > 0) {
+                        const neighbor = neighbors.shift();  // pop first element
 
-                    //
-                    // check each neighbor for it's neighbors
-                    // and add them to the cluster if they are 
-                    // not already in a cluster
-                    //
-                    for(let j = 0; j < neighbors.length; j += 1) {
-                        expandCluster(clusterIndex, neighbors[j], neighbors);
+                        //
+                        // if it's an outliner, then add it to cluster
+                        //
+                        if(NOISE === assignments[neighbor]) {
+                            assignments[neighbor] = clusterIndex;
+                        }
+
+                        //
+                        // if the point is not yet been processed,
+                        // then add to cluster and look at it's neighbors
+                        //
+                        if(undefined === assignments[neighbor]) {
+                            assignments[neighbor] = clusterIndex;
+
+                            //
+                            // check each neighbor for it's neighbors
+                            // and add them to the cluster if they are 
+                            // not already in a cluster
+                            //
+                            const expansion = rangeQuery(neighbor);
+                            for(let j = 0; j < expansion.length; j += 1) {
+                                //
+                                // shortcut - if it's noise, just add to cluster and 
+                                // don't bother visiting it for expansion
+                                //
+                                if(NOISE === assignments[expansion[j]]) {
+                                    assignments[expansion[j]] = clusterIndex;
+                                }
+                                if(undefined === assignments[expansion[j]]) {
+                                    neighbors.push(expansion[j]);
+                                }
+                            }
+                        }
                     }
                     
                     clusterIndex += 1;
