@@ -46,12 +46,12 @@ define(function () {
         /**
          * Given a cluster and a point in the cluster,
          * if the point is a core point (has >= min neighbors)
-         * then add any neighbors of that core point that are 
-         * not yet in a cluster to the cluster.
+         * then add any neighbors of that core point to 
+         * the cluster, unless they are already in a cluster.
          * 
-         * @param {*} clusterIndex 
-         * @param {*} index 
-         * @param {*} neighbors 
+         * @param {*} clusterIndex zero based index of cluster 
+         * @param {*} index index of point in observations that is part of cluster
+         * @param {*} clusterPoints are the points in the cluster 
          */
         function expandCluster(clusterIndex, index, clusterPoints) {
             //
@@ -75,6 +75,7 @@ define(function () {
                         case undefined: clusterPoints.push(observationIndex);            // fall through, so it is assignmentsled to this cluster
                         case NOISE: assignments[observationIndex] = clusterIndex; break; // outlier is now part of this cluster
                     }
+
                 }
             }
         }
@@ -120,5 +121,39 @@ define(function () {
         return assignments;
     }
 
-    return {'cluster': dbscan};
+    /**
+     * Use the model assignments to create
+     * array of observation indices for each centroid
+     * 
+     * @param {object} model with observations and assignments
+     * @return {*} result with clusers and outliers
+     */
+    function assignmentsToClusters(model) {
+        // 
+        // put offset of each data points into clusters using the assignments
+        //
+        const n = model.observations.length;
+        const assignments = model.assignments;
+
+        const outliers = [];
+        const clusters = [];
+        for(let i = 0; i < n; i += 1) {
+            if(assignments[i] >= 0) {
+                if(undefined == clusters[assignments[i]]) {
+                    clusters[assignments[i]] = [];
+                }
+                clusters[assignments[i]].push(i);    
+            } else {
+                // it's an outlier
+                outliers.push(i);
+            }
+        }
+        return {'clusters': clusters, 'outliers': outliers};
+    }
+
+
+    return {
+        'cluster': dbscan,
+        "assignmentsToClusters": assignmentsToClusters
+    };
 });

@@ -13,7 +13,7 @@ define(function (require) {
     const kmeans = require("./kmeans/kmeans");
     const kmeanspp = require("./kmeans/kmeanspp");
     const randomCentroidInitializer = require("./kmeans/randomCentroidInitializer");
-    const kmeansRandomModel = require("./kmeans/kmeansRandomModel");
+    const randomModel = require("./dataset/randomData");
 
 
     /**
@@ -27,7 +27,7 @@ define(function (require) {
         //
         // map iris data rows from dictionary to vector (array), leaving out the label
         //
-        const observations = kmeansRandomModel.randomSphericalVectors(n, d, 10.0);
+        const observations = randomModel.randomSphericalVectors(n, d, 10.0);
 
         //
         // create the intial model and run it

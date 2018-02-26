@@ -3,12 +3,10 @@
 //
 
 /**
- * module for creating random models for kmeans clustering
+ * module for creating random data sets
  */
 define(function (require) {
     "use strict";
-
-    const kmeans = require("./kmeans");
 
     /**
      * @return a random, normally distributed number

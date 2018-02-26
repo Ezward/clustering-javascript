@@ -1,0 +1,102 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+
+    <title>DBSCAN in JavaScript</title>
+    <meta name="description" content="DBSCAN in JavaScript">
+    <meta name="author" content="Ezward">
+
+    <!-- third party includes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
+
+    <style>
+        .container
+        {
+            position: absolute;
+            top: 5%;
+            left: 5%;
+            bottom: 5%;
+            right: 5%;
+        }
+
+        .container canvas
+        {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls
+        {
+            position: absolute;
+            top: 2%;
+            left: 5%;
+        }
+
+        .hidden 
+        {
+            visibility: hidden;
+        }
+
+
+    </style>
+
+</head>
+<body onKeyUp="onKey(event)">
+    <div class="controls" >
+        <select onchange="showPlot(this.value)">
+            <option value="container">Iris Dataset Clustered with DBSCAN</option>
+            <option value="container2">Iris Dataset True Labels</option>
+            <option value="container3">Iris Dataset Cluster Composition with DBSCAN</option>
+        </select>
+        <span>epsilon=</span><input name="epsilonEdit" type="number" value="0.5" min="0.1" max="5" />
+        <span>minimum points=</span><input name="minimumPointsEdit" type="number" value="3" min="2" max="30" />
+        <button class="reset" onclick="recalculate()">Recalculate</button>
+    </div>
+
+    <div id="container" class="container">
+        <canvas></canvas>
+    </div>
+    <div id = "container2" class="container hidden">
+        <canvas></canvas>
+    </div>
+    <div id = "container3" class="container hidden">
+            <canvas></canvas>
+    </div>
+
+    <script>
+        function recalculate() {
+            require('./dbscanIrisMain');
+        }
+        function onKey(e) {
+            if(e.keyCode===13) recalculate();
+        }
+    </script>
+    
+
+    <!-- bootstrap application with requirejs -->
+    <!-- <script data-main="kmeansIrisRequireConfig.js" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.5/require.js"></script> -->
+
+    <!-- either user requirejs (above) OR these script tags, but not both -->
+    <!-- bootstrap with explicit script tags so 'view source' works -->
+    <script data-root="src/main/js" src="src/main/js/loader/loader.js" ></script>
+    <script src="src/main/js/dataset/iris.js" ></script>
+    <script src="src/main/js/distance/euclideanDistance.js" ></script>
+    <script src="src/main/js/dbscan/dbscan.js" ></script>
+    <script src="src/main/js/dataset/randomData.js" ></script>
+    <script src="src/main/js/dbscanIrisApp.js" ></script>
+    <script src="src/main/js/dbscanIrisMain.js" onload="recalculate()"></script>
+
+    <script>
+        function showPlot(container) {
+            document.querySelectorAll('.container').forEach(e => e.classList.add('hidden'));
+            document.getElementById(container).classList.remove('hidden');
+        }
+    </script>
+
+</body>
+
+</html>
