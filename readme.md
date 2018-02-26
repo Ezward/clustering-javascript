@@ -3,6 +3,7 @@
 An implementation of the kmeans and kmeans++ algorithms in JavaScript.  Examples use the Iris data set and a random data generator.
 * [KMeans on the Iris Data Set](https://ezward.github.io/kmeans-javascript/kmeansiris.html)
 * [KMeans on randomly generated data](https://ezward.github.io/kmeans-javascript/kmeansrandom.html)
+* [DBSCAN on the Iris Data Set](https://ezward.github.io/kmeans-javascript/dbscaniris.html)
 
 A detailed discussion of kmeans and the kmeans++ initialization algorithm can be found [here](https://github.com/Ezward/machinelearningnotes/tree/master/Clustering%20and%20Retrieval/week%203%20-%20Clustering%20with%20k-means)
 
