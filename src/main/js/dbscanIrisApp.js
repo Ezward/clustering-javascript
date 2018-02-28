@@ -71,11 +71,22 @@ define(function (require) {
      * @return map of species to percent for each cluster (centroid)
      */
     function measureClusterCompositions(clusters, outliers) {
+
+        /**
+         * count each type of iris in the cluster.
+         * @param {*} cluster 
+         * @return {*} object with cluster count for each iris type
+         */
         function computeClusterCounts(cluster) {
             const composition = {'setosa': 0, 'versicolor': 0, 'virginica': 0};
             cluster.forEach(observationIndex => composition[iris[observationIndex].species] += 1 );
             return composition;
         }
+
+        /**
+         * Use count of each iris type to compute the percetage composition if the cluster.
+         * @param {*} clusterComposition 
+         */
         function mapClusterCountToPercentage(clusterComposition) {
             return {
                 'setosa': {count: clusterComposition.setosa, percent: clusterComposition.setosa / speciesCounts.setosa},
@@ -297,7 +308,7 @@ define(function (require) {
 
         const datasets = species.map((sp, i) => ({
                 label: sp,
-                data: clusterCompositions.map(cc => cc[sp].count),
+                data: clusterCompositions.map(cc => cc[sp].percent),
                 backgroundColor: speciesColor[sp]
         }));
 
@@ -318,6 +329,12 @@ define(function (require) {
                     position: 'bottom',
                     display: true
                 },
+                tooltips: {
+                    callbacks: {
+                        label: (tooltipItem, data) => species[tooltipItem.datasetIndex] + ": " + Math.floor(clusterCompositions[tooltipItem.index][species[tooltipItem.datasetIndex]].percent * 1000) / 10 + "%",
+                        labelColor: (tooltipItem, data) => ({'backgroundColor': speciesColor[species[tooltipItem.datasetIndex]]})
+                    }
+                }
             }
         };
 

@@ -273,7 +273,7 @@ define(function (require) {
 
         const datasets = species.map((sp, i) => ({
                 label: sp,
-                data: clusterCompositions.map(cc => cc[sp].count),
+                data: clusterCompositions.map(cc => cc[sp].percent),
                 backgroundColor: speciesColor[sp]
         }));
 
@@ -294,6 +294,12 @@ define(function (require) {
                     position: 'bottom',
                     display: true
                 },
+                tooltips: {
+                    callbacks: {
+                        label: (tooltipItem, data) => species[tooltipItem.datasetIndex] + ": " + Math.floor(clusterCompositions[tooltipItem.index][species[tooltipItem.datasetIndex]].percent * 1000) / 10 + "%",
+                        labelColor: (tooltipItem, data) => ({'backgroundColor': speciesColor[species[tooltipItem.datasetIndex]]})
+                    }
+                }
             }
         };
 
