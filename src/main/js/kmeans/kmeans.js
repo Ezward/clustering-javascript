@@ -45,13 +45,13 @@ define(function (require) {
      * @private
      * find the closest centroid for the given observation and return it's index.
      *
-     * @param [[number]] centroids - array of k vectors, each vector with same dimension as observations.
-     *                               these are the center of the k clusters
      * @param [[number]] observation - vector with same dimension as centroids.
      *                                 this is the observation to be clustered.
+     * @param [[number]] centroids - array of k vectors, each vector with same dimension as observations.
+     *                               these are the center of the k clusters
      * @return {number} the index of the closest centroid in centroids
      */
-    function findClosestCentroid(centroids, observation) {
+    function findClosestCentroid(observation, centroids) {
         const k = centroids.length; // number of clusters/centroids
 
         let centroid = 0;
@@ -113,16 +113,16 @@ define(function (require) {
      * @private
      * calculate the cluster assignments for the observations, given the centroids.
      *
-     * @param [[number]] centroids - list of vectors with same dimension as observations
      * @param [[number]] observations - list of vectors with same dimension as centroids
+     * @param [[number]] centroids - list of vectors with same dimension as observations
      * @return [number] list of indices into centroids; one per observation.
      */
-    function assignClusters(centroids, observations) {
+    function assignClusters(observations, centroids) {
         const n = observations.length;  // number of observations
 
         const assignments = [];
         for(let i = 0; i < n; i += 1) {
-            assignments.push(findClosestCentroid(centroids, observations[i]));
+            assignments.push(findClosestCentroid(observations[i], centroids));
         }
 
         return assignments; // centroid index for each observation
@@ -138,11 +138,11 @@ define(function (require) {
      * @param [[number]] observations - list of vectors with same dimension as centroids
      * @return a new model with observations, centroids and assignments
      */
-    function kmeansStep(centroids, observations) {
+    function kmeansStep(observations, centroids) {
         const k = centroids.length; // number of clusters/centroids
 
         // assign each observation to the nearest centroid to create clusters
-        const assignments = assignClusters(centroids, observations); // array of cluster indices that correspond observations
+        const assignments = assignClusters(observations, centroids); // array of cluster indices that correspond observations
 
         // calculate a new centroid for each cluster given the observations in the cluster
         const newCentroids = [];
@@ -161,43 +161,47 @@ define(function (require) {
      * Run k-means on the given model until each centroid converges to with the given delta
      * The initial model is NOT modified by the algorithm, rather a new model is returned.
      * 
-     * @param {*} model - object with 
-     *                    observations: array, length n, of data points; each datapoint is 
-     *                                  itself an array of numbers (a vector).
-     *                                  The length each datapoint (d) vector should be the same.  
-     *                    centroids: array of data points.
-     *                               The length of the centroids array indicates the number of
-     *                               of desired clusters (k).
-     *                               each datapoint is array (vector) of numbers 
-     *                               with same dimension as the datapoints in observations. 
-     *                    assignments: array of integers, one per observation, 
-     *                                 with values 0..centroids.length - 1
-     * @param number delta - the maximum difference between each centroid in consecutive runs for convergence
+     * @param {array} observations: array, length n, of data points; each datapoint is 
+     *                             itself an array of numbers (a vector).
+     *                             The length each datapoint (d) vector should be the same.  
+     * @param {array} centroids: array of data points.
+     *                           The length of the centroids array indicates the number of
+     *                           of desired clusters (k).
+     *                           each datapoint is array (vector) of numbers 
+     *                           with same dimension as the datapoints in observations. 
+     * @param {function} converged - function to test convergence of model
      * @return {*} - result with 
      *               model: model, as described above, with updated centroids and assignments, 
      *               iterations: number of iterations, 
      *               durationMs: elapsed time in milliseconds
      */
-    function kmeans(model, maximumIterations = 200, converged = assignmentsConverged) {
+    function kmeans(observations, centroids, maximumIterations = 200, converged = assignmentsConverged) {
         const start = new Date();
 
-        // calculate new centroids and cluster assignments
-        let newModel = kmeansStep(model.centroids, model.observations);
+        // initial model
+        let model = undefined;
+
+        // calculate initial assignments and updated centroids
+        let newModel = kmeansStep(observations, centroids);
 
         // continue until centroids do not change (within given delta)
         let i = 0;
-        while((i < maximumIterations) && !converged(model, newModel)) {
+        while((i < maximumIterations) && ((undefined === model) || !converged(model, newModel))) {
             model = newModel;   // new model is our model now
             // console.log(model);
 
-            // calculate new centroids and cluster assignments
-            newModel = kmeansStep(model.centroids, model.observations);
+            // calculate new cluster assignments and updated centroids
+            newModel = kmeansStep(model.observations, model.centroids);
             i += 1;
         }
 
         // console.log(newModel);
         const finish = new Date();
-        return {'model': newModel, 'iterations': i, 'durationMs': (finish.getTime() - start.getTime())};
+        return {
+            'model': newModel, 
+            'iterations': i, 
+            'durationMs': (finish.getTime() - start.getTime())
+        };
     }
 
     /**
@@ -293,6 +297,7 @@ define(function (require) {
         'cluster': kmeans, 
         'distance': distance,
         'distanceSquared': distanceSquared,
+        'calculateCentroid': calculateCentroid,
         'centroidsConverged': centroidsConverged,
         'assignmentsConverged': assignmentsConverged,
         "assignmentsToClusters": assignmentsToClusters

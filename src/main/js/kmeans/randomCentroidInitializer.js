@@ -36,15 +36,7 @@ define(function () {
             randomIndices.splice(j, 1); // remove this index from consideration;
         }
 
-        //
-        // initiallly assign all observations to the first cluster
-        //
-        const assignments = []
-        for(let i = 0; i < n; i += 1) {
-            assignments.push(i % k);
-        }
-
-        return {'observations': observations, 'centroids': centroids, 'assignments': assignments}
+        return centroids;
     }
 
 });

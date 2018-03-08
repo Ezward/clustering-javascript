@@ -12,8 +12,9 @@ define(function (require) {
      * @return a random, normally distributed number
      */
     function randomNormal() {
-        // n = 6 gives a good enough approximation
-        return ((Math.random() + Math.random() + Math.random() + Math.random() + Math.random() + Math.random()) - 3) / 3;
+        // n = 10 gives a good enough approximation
+        return ((Math.random() + Math.random() + Math.random() + Math.random() + Math.random() 
+            + Math.random() + Math.random() + Math.random() + Math.random() + Math.random()) - 5) / 5;
     }
 
     /**
@@ -63,19 +64,66 @@ define(function (require) {
         return observations;
     }
 
+    /**
+     * Generate a random normal vector
+     * 
+     * @param {Integer} d dimension of data
+     * @param {Number} r radium from center for data point
+     * @param {number} center d dimensional point that is center of distribution
+     * @return n random datapoints of dimension d
+     */
+    function randomNormalVector(d, center) {
+        if(center && (center.length !== d)) {
+            throw Error("center must be d-dimensional");
+        }
+
+        const observation = [];
+
+        let magnitude = 0.0;
+        for(let j = 0; j < d; j += 1)
+        {
+            const x = randomNormal();
+            observation[j] = x;
+            if(center) {
+                observation[j] += center[j];
+            }
+        }
+
+        return observation;
+    }
+
+
+    function randomNormalVectors(n, d, center) {
+        if(center && (center.length !== d)) {
+            throw Error("center must be d-dimensional");
+        }
+        // create n random observations, each of dimension d
+        const observations = [];
+        for(let i = 0; i < n; i += 1) {
+            // create random observation of dimension d with random radius
+            const observation = randomNormalVector(d, center);
+            observations.push(observation);
+        }
+
+        return observations;
+    }
+
 
 
     /**
      * Generate a spherical random vector
      * 
-     * @param {Integer} n number of data points
      * @param {Integer} d dimension of data
      * @param {Number} r radium from center for data point
+     * @param {number} center d dimensional point that is center of distribution
      * @return n random datapoints of dimension d
      */
-    function randomSphericalVector(d, r) {
-        const observation = [];
+    function randomSphericalVector(d, r, center) {
+        if(center && (center.length !== d)) {
+            throw Error("center must be d-dimensional");
+        }
 
+        const observation = [];
         let magnitude = 0.0;
         for(let j = 0; j < d; j += 1)
         {
@@ -88,6 +136,9 @@ define(function (require) {
         magnitude = Math.sqrt(magnitude);
         for(let j = 0; j < d; j += 1) {
             observation[j] = observation[j] * r / magnitude;
+            if(center) {
+                observation[j] += center[j];
+            }
         }
 
         return observation;
@@ -101,15 +152,19 @@ define(function (require) {
      * @param {Integer} n number of data points
      * @param {Integer} d dimension of data
      * @param {Number} max radius from center for data points
+     * @param {number} center d dimensional point that is center of distribution
      * @return n random datapoints of dimension d
      */
-    function randomSphericalVectors(n, d, r) {
+    function randomSphericalVectors(n, d, r, center) {
+        if(center && (center.length !== d)) {
+            throw Error("center must be d-dimensional");
+        }
 
         // create n random observations, each of dimension d
         const observations = [];
         for(let i = 0; i < n; i += 1) {
             // create random observation of dimension d with random radius
-            const observation = randomSphericalVector(d, Math.random() * r);
+            const observation = randomSphericalVector(d, Math.random() * r, center);
             observations.push(observation);
         }
 
@@ -159,11 +214,14 @@ define(function (require) {
     }
 
     return {
+        'randomNormal': randomNormal,
         'randomVector': randomVector,
         'randomUnitVector': randomUnitVector,
+        'randomNormalVector': randomNormalVector,
         'randomSphericalVector': randomSphericalVector,
         'randomVectors': randomVectors,
         'randomUnitVectors': randomUnitVectors,
+        'randomNormalVectors': randomNormalVectors,
         'randomSphericalVectors': randomSphericalVectors
     }
 

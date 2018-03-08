@@ -37,9 +37,8 @@ define(function (require) {
         //
         // create the intial model and run it
         //
-        const initialModel = randomCentroidInitializer(observations, k);
-        // const initialModel = kmeanspp(observations, k);
-        const results = kmeans.cluster(initialModel);
+        // const results = kmeans.cluster(observations, kmeanspp(observations, k));
+        const results = kmeans.cluster(observations, randomCentroidInitializer(observations, k));
 
         results.clusters = kmeans.assignmentsToClusters(results.model);
         results.clusterCompositions = measureClusterCompositions(results.clusters);

@@ -10,42 +10,180 @@
  */
 define(function (require) {
     "use strict";
+    const euclidean = require("./distance/euclideanDistance");
     const kmeans = require("./kmeans/kmeans");
     const kmeanspp = require("./kmeans/kmeanspp");
     const randomCentroidInitializer = require("./kmeans/randomCentroidInitializer");
+    const dbscan = require("./dbscan/dbscan");
     const randomModel = require("./dataset/randomData");
+
+    function randomCenter(d, spread) {
+        let centroid = [];
+        for(let i = 0; i < d; i += 1) centroid.push(Math.random() * spread);
+        return centroid;
+    }
+
+    /**
+     * Generator n assignments to cluster k
+     * 
+     * @param {*} k 
+     * @param {*} n 
+     * @return {array} list of n integers with value k
+     */
+    function assign(k, n) {
+        const assignments = [];
+        for(let i = 0; i < n; i += 1) {
+            assignments.push(k);
+        }
+        return assignments;
+    }
+
+    /**
+     * Generate k clusters of n 2-dimensional points
+     * with a circular distribution (a disk)
+     * 
+     * @param {number} k number of clusters
+     * @param {number} n number of points in each cluster
+     * @param {number} d dimension of observations and centroids
+     * @return {*} the initial model with observations, centroids, assignments and clusters
+     */
+    function randomSphericalClusters(k, n, d) {
+        const centroids = [];
+        const clusters = [];
+        let observations = [];
+        let assignments = [];
+        for(let i = 0; i < k; i += 1) {
+            //
+            // generate observations, assignments and cluster center 
+            //
+            const centroid = randomCenter(d, Math.sqrt(k));
+            const clusterObservations = randomModel.randomSphericalVectors(n, d, 1.0, centroid);
+            const clusterAssignments = clusterObservations.map(o => i);    // generate assignment to this cluster for each observation
+            centroids.push(centroid);
+            clusters.push(clusterObservations);
+            observations = observations.concat(clusterObservations);
+            assignments = assignments.concat(clusterAssignments);
+        }
+
+        return {
+            'observations': observations,
+            'centroids': centroids,
+            'assignments': assignments,
+            'clusters': clusters
+        };
+    }
+
+    /**
+     *  Generate k clusters of n 2-dimensional points
+     *  with a normal distribution.
+     * 
+     * @param {number} k number of clusters
+     * @param {number} n number of points in each cluster
+     * @param {number} d dimension of observations and centroids
+     * @return {*} the initial model with observations, centroids, assignments and clusters
+     */
+    function randomNormalClusters(k, n, d) {
+        const centroids = [];
+        const clusters = [];
+        let observations = [];
+        let assignments = [];
+        for(let i = 0; i < k; i += 1) {
+            //
+            // generate observations, assignments and cluster center 
+            //
+            const centroid = randomCenter(d, Math.sqrt(k));
+            const clusterObservations = randomModel.randomNormalVectors(n, d, centroid);
+            const clusterAssignments = clusterObservations.map(o => i);    // generate assignment to this cluster for each observation
+            centroids.push(centroid);
+            clusters.push(clusterObservations);
+            observations = observations.concat(clusterObservations);
+            assignments = assignments.concat(clusterAssignments);
+        }
+
+        return {
+            'observations': observations,
+            'centroids': centroids,
+            'assignments': assignments,
+            'clusters': clusters
+        };
+    }
+
+    /**
+     * Generate a random data model.
+     * 
+     * @param {number} k number of clusters to generate
+     * @param {number} n number of points in each cluster
+     * @param {number} d dimension of observations and centroids
+     * @param {string} dataType is "spherical" or "normal"
+     */
+    function generateRandomModel(k, n, d, dataType) {
+        switch(dataType) {
+            case "spherical": return randomSphericalClusters(k, n, d);
+            case "normal": return randomNormalClusters(k, n, d);
+        }
+        throw Error("unexpected dataType in generateRandomModel()");
+    }
+
+    /**
+     * @public
+     * Load iris dataset and run DBSCAN on it on it using Euclidean distance
+     * 
+     * @param {array} observations, array of d-dimensional vectors
+     * @param {number} epslilon maximum distance for point to be in neighborhood
+     * @param {number} minimumPoints minimum number of points in neighborhood for a core point
+     * @return {*} results with model (observations, assignments), clusters and clusterCompositions
+     */
+    function clusterWithDbscan(observations, epsilon, minimumPoints) {
+        //
+        // cluster, group the clusters, measure cluster composition
+        //
+        const results = dbscan.cluster(observations, euclidean.distance, epsilon, minimumPoints);
+        const clusters = dbscan.assignmentsToClusters(results.model);
+        results.model.centroids = [];   // no centroids in dbscan
+
+        return {
+            'model': results.model,
+            'clusters': clusters.clusters,
+            'outliers': clusters.outliers,
+            'iterations': results.iterations,
+            'durationMs': results.durationMs
+        };
+    }
+
 
 
     /**
      * @public
-     * Load iris dataset and run kmeans on it given the number of clusters
      * 
-     * @param {integer} k number of clusters to create
+     * @param {array} observations, array of d-dimensional vectors
+     * @param {number} k number of clusters to generate
+     * @param {string} algorithm is "kmeans", "kmeans++"
+     * @return {*} results with model (observations, assignments), clusters and clusterCompositions
      */
-    function cluster(k, n, d) {
+    function clusterWithKmeans(observations, k, initializer) {
+        //
+        // cluster, group the clusters, measure cluster composition
+        //
+        const initialClusters = initializer(observations, k);;
+        const results = kmeans.cluster(observations, initialClusters);
+        const clusters = kmeans.assignmentsToClusters(results.model);
 
-        //
-        // map iris data rows from dictionary to vector (array), leaving out the label
-        //
-        const observations = randomModel.randomSphericalVectors(n, d, 10.0);
+        return {
+            'model': results.model,
+            'clusters': clusters,
+            'outliers': [],                  // no outliers in kmeans
+            'iterations': results.iterations,
+            'durationMs': results.durationMs
+        };
+    }
 
-        //
-        // create the intial model and run it
-        //
-        // const initialModel = randomCentroidInitializer(observations, k);
-        const initialModel = kmeanspp(observations, k);
-
-        //
-        // cluster into given number of clusters
-        //
-        const results = kmeans.cluster(initialModel);
-    
-        //
-        // do this for the convenience of the plotting functions
-        //
-        results.clusters = kmeans.assignmentsToClusters(results.model);
-
-        return results;
+    function cluster(observations, k, epsilon, minimumPoints, algorithm) {
+        switch(algorithm) {
+            case 'kmeans': return clusterWithKmeans(observations, k, randomCentroidInitializer);
+            case 'kmeans++': return clusterWithKmeans(observations, k, kmeanspp);
+            case 'dbscan': return clusterWithDbscan(observations, epsilon, minimumPoints);
+        }
+        throw new Error("unexpected algorithm in cluster()");
     }
 
     const clusterColor = ['red', 'green', 'blue', 'yellow', 'purple', 'cyan', 'magenta', 'pink', 'brown', 'black'];
@@ -66,15 +204,22 @@ define(function (require) {
         const model = results.model;
         const observations = model.observations;
         const assignments = model.assignments;
-        const centroids = model.centroids;
+        const centroids = model.centroids || [];    // dbscan does not produce centroids
+        const outliers = results.outliers || [];    // kmeans does not produce outliers
         const d = observations[0].length;
         const n = observations.length;
-        const k = centroids.length;
 
         // 
-        // put offset of each data points into clusters using the assignments
+        // add the outliers as the last cluster
         //
-        const clusters = results.clusters;
+        const hasOutliers = results.outliers.length > 0;
+        const clusters = [];
+        results.clusters.forEach(c => clusters.push(c));
+        if(hasOutliers) {
+            clusters.push(results.outliers);
+        }
+        const k = clusters.length;
+
 
         //
         // plot the clusters
@@ -84,7 +229,7 @@ define(function (require) {
             // x = dimension 0 and y = dimension 1 
             datasets: clusters.map(function(c, i) { 
                 return {
-                    label: "cluster" + i,
+                    label: (hasOutliers && (i === k-1)) ? "outliers" : ("cluster" + i),
                     data: c.map(d => ({'x': observations[d][0], 'y': observations[d][1]})),
                     backgroundColor: clusterColor[i % clusterColor.length],
                     pointBackgroundColor: clusterColor[i % clusterColor.length],
@@ -97,7 +242,7 @@ define(function (require) {
             maintainAspectRatio: false,
             title: {
                 display: true,
-                text: 'Random spherical data set (d=$d, n=$n) clustered using K-Means (k=$k)'
+                text: 'Random data set (d=$d, n=$n) clustered using K-Means (k=$k)'
                         .replace("$d", d)
                         .replace('$n', n)
                         .replace('$k', k)
@@ -141,6 +286,6 @@ define(function (require) {
 
     }
 
-    return {'cluster': cluster, 'plot': plot};
+    return {'generate': generateRandomModel, 'cluster': cluster, 'plot': plot};
 });
 

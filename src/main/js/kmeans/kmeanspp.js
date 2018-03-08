@@ -122,11 +122,7 @@ define(function (require) {
         //     standard k-means clustering. Return the model so that
         //     kmeans can continue.
         //
-        return {
-            'observations': observations,
-            'centroids': centroids.map(x => observations[x]), // map centroid index to centroid value
-            'assignments': observations.map((x, i) => i % centroids.length) // distribute among centroids
-        }
+        return centroids.map(x => observations[x]); // map centroid index to centroid coordinate value
     }
 
 });

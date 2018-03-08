@@ -39,6 +39,12 @@
         .hidden 
         {
             visibility: hidden;
+            display: none;
+        }
+
+        .inline
+        {
+            display: inline; 
         }
 
 
@@ -47,14 +53,55 @@
 </head>
 <body onKeyUp="onKey(event)">
     <div id="controls" class="controls">
-        <button class="reset" onclick="require('./kmeansRandomMain')()">Recalculate</button>
-        <span>k=</span><input name="kEdit" type="number" value="6" min="2" max="10" />
-        <span>n=</span><input name="nEdit" type="number" value="1000" min="10" max="30000" />
-        <span>d=</span><input name="dEdit" type="number" value="2" min="2" max="100" />
+
+        <!-- // select the plot to view: True Labels, Clustered Labels, Cluster Composition -->
+        <select onchange="showPlot(this.value)" value="container">
+            <option value="container">Dataset Clustered</option>
+            <option value="container2">Dataset True Labels</option>
+            <option value="container3">Dataset Cluster Composition</option>
+        </select>
+
+        <!-- select the random data generation algorithm -->
+        <select id="select_generator" value="spherical">
+            <option value="spherical">Spherical Data</option>
+            <option value="normal">Gaussian Data</option>
+        </select>
+
+        <!-- select the random data generation parameters -->
+        <div id="dataset_parameters" style="display: inline">
+            <span>k=</span><input name="kDataEdit" type="number" value="3" min="1" max="100" />
+            <span>n=</span><input name="nDataEdit" type="number" value="100" min="1" max="30000" />
+            <span>d=</span><input name="dDataEdit" type="number" value="2" min="2" max="100" />
+        </div>
+
+        <!-- select the clustering algorithm: kmeans, kmeans++ or dbscan -->
+        <select id="select_algorithm" value="kmeans" onchange="selectAlgorithm(this.value)">
+            <option value="kmeans">KMeans</option>
+            <option value="kmeans++">KMeans++</option>
+            <option value="dbscan">DBSCAN</option>
+        </select>
+
+        <!-- edit kmeans/kmeans++ parameters -->        
+        <span id="kmeans_parameters">
+            <span>k=</span><input name="kEdit" type="number" value="3" min="2" max="10" />
+        </span>
+
+        <!-- edit dbscan parameters; epsilon (ε), minimum points -->
+        <span id="dbscan_parameters" class="hidden">
+            <span>&epsilon;=</span><input name="eEdit" type="number" value="0.4" min="0.1" max="5" />
+            <span>minimum points=</span><input name="mEdit" type="number" value="4" min="1" max="30" />
+        </span>
+        <button class="reset" onclick="recalculate()">Recalculate</button>
     </div>
 
     <div id="container" class="container">
         <canvas></canvas>
+    </div>
+    <div id = "container2" class="container hidden">
+        <canvas></canvas>
+    </div>
+    <div id = "container3" class="container hidden">
+            <canvas></canvas>
     </div>
 
     <script>
@@ -63,6 +110,15 @@
         }
         function onKey(e) {
             if(e.keyCode===13) recalculate();
+        }
+        function selectAlgorithm(algorithm) {
+            if("dbscan" === algorithm) {
+                document.getElementById("kmeans_parameters").classList.add('hidden');
+                document.getElementById("dbscan_parameters").classList.remove('hidden');
+            } else {
+                document.getElementById("dbscan_parameters").classList.add('hidden');
+                document.getElementById("kmeans_parameters").classList.remove('hidden');
+            }
         }
     </script>
     
@@ -76,6 +132,7 @@
     <script src="src/main/js/kmeans/kmeans.js" ></script>
     <script src="src/main/js/kmeans/kmeanspp.js" ></script>
     <script src="src/main/js/kmeans/randomCentroidInitializer.js" ></script>
+    <script src="src/main/js/dbscan/dbscan.js" ></script>
     <script src="src/main/js/dataset/randomData.js" ></script>
     <script src="src/main/js/kmeansRandomApp.js" ></script>
     <script src="src/main/js/kmeansRandomMain.js" onload="recalculate()"></script>

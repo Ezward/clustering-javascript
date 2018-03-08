@@ -20,6 +20,8 @@ define(function () {
      * @return {[number]} list of assignments with same length as the observations 
      */
     function dbscan(observations, distance, epslilon, minimumPoints) {
+        const start = new Date();
+
         const n = observations.length;
         const assignments = [];
 
@@ -44,7 +46,7 @@ define(function () {
         }
 
         let clusterIndex = 0;
-
+        let iterations = 0;
         for(let i = 0; i < n; i += 1) {
             //
             // if the point is not yet labeled as being
@@ -52,7 +54,13 @@ define(function () {
             //
             if(undefined === assignments[i]) {
                 const neighbors = rangeQuery(i);
-                if(neighbors.length < minimumPoints) {
+
+                //
+                // if neighbor count (including the point itself)
+                // is less than min points, then this is not in
+                // a cluster and so is an outlier
+                //
+                if(neighbors.length + 1 < minimumPoints) {
                     //
                     // this point is an outlier
                     //
@@ -63,8 +71,8 @@ define(function () {
                     // and it's neighbors are part of it's cluster
                     //
                     assignments[i] = clusterIndex;
-                    while(neighbors.length > 0) {
-                        const neighbor = neighbors.shift();  // pop first element
+                    for(let ni = 0; ni < neighbors.length; ni += 1) {
+                        const neighbor = neighbors[ni];  // pop first element
 
                         //
                         // if it's an outliner, then add it to cluster
@@ -97,6 +105,8 @@ define(function () {
                                 if(undefined === assignments[expansion[j]]) {
                                     neighbors.push(expansion[j]);
                                 }
+
+                                iterations += 1;
                             }
                         }
                     }
@@ -106,7 +116,15 @@ define(function () {
             }
         }
 
-        return assignments;
+        const finish = new Date();
+        return {
+            'model': {
+                'observations': observations, 
+                'assignments': assignments
+            }, 
+            'iterations': iterations, 
+            'durationMs': (finish.getTime() - start.getTime())
+        };
     }
 
     /**

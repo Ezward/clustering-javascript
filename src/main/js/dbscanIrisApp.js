@@ -38,20 +38,17 @@ define(function (require) {
         //
         // create the intial model and run it
         //
-        const assignments = dbscan.cluster(observations, euclidean.distance, epsilon, minimumPoints);
-        const model = {
-            'observations': observations, 
-            'assignments': assignments
-        };
-
-        const clusters = dbscan.assignmentsToClusters(model);
+        const results = dbscan.cluster(observations, euclidean.distance, epsilon, minimumPoints);
+        const clusters = dbscan.assignmentsToClusters(results.model);
         const clusterCompositions = measureClusterCompositions(clusters.clusters, clusters.outliers);
 
         return {
-            'model': model,
+            'model': results.model,
             'clusters': clusters.clusters,
             'outliers': clusters.outliers,
-            'clusterCompositions': clusterCompositions
+            'clusterCompositions': clusterCompositions,
+            'iterations': results.iterations,
+            'durationMs': results.durationMs
         };
     }
 
