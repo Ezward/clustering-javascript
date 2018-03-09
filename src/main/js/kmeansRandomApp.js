@@ -109,6 +109,41 @@ define(function (require) {
     }
 
     /**
+     *  Generate k clusters of n 2-dimensional points
+     *  with a normal distribution.
+     * 
+     * @param {number} k number of clusters
+     * @param {number} n number of points in each cluster
+     * @param {number} d dimension of observations and centroids
+     * @return {*} the initial model with observations, centroids, assignments and clusters
+     */
+    function randomUniformClusters(k, n, d) {
+        const centroids = [];
+        const clusters = [];
+        let observations = [];
+        let assignments = [];
+        for(let i = 0; i < k; i += 1) {
+            //
+            // generate observations, assignments and cluster center 
+            //
+            const centroid = randomCenter(d, Math.sqrt(k));
+            const clusterObservations = randomModel.randomVectors(n, d, centroid);
+            const clusterAssignments = clusterObservations.map(o => i);    // generate assignment to this cluster for each observation
+            centroids.push(centroid);
+            clusters.push(clusterObservations);
+            observations = observations.concat(clusterObservations);
+            assignments = assignments.concat(clusterAssignments);
+        }
+
+        return {
+            'observations': observations,
+            'centroids': centroids,
+            'assignments': assignments,
+            'clusters': clusters
+        };
+    }
+
+    /**
      * Generate a random data model.
      * 
      * @param {number} k number of clusters to generate
@@ -120,6 +155,7 @@ define(function (require) {
         switch(dataType) {
             case "spherical": return randomSphericalClusters(k, n, d);
             case "normal": return randomNormalClusters(k, n, d);
+            case "uniform": return randomUniformClusters(k, n, d);
         }
         throw Error("unexpected dataType in generateRandomModel()");
     }

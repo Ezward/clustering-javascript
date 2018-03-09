@@ -179,15 +179,12 @@ define(function (require) {
      * @param {Number} radius of sphere
      * @return n random datapoints of dimension d
      */
-    function randomVectors(n, d, min, max) {
-
-        const range = max - min;
-
+    function randomVectors(n, d, center) {
         // create n random observations, each of dimension d
         const observations = [];
         for(let i = 0; i < n; i += 1) {
             // create random observation of dimension d
-            const observation = randomVector(d, min, max);
+            const observation = randomVector(d, 1.0, center);
             observations.push(observation);
         }
 
@@ -201,13 +198,15 @@ define(function (require) {
      * @param {Number} radius of sphere
      * @return n random datapoints of dimension d
      */
-    function randomVector(d, min, max) {
+    function randomVector(d, spread, center) {
 
         // create random observation of dimension d
-        const range = max - min;
         const observation = [];
         for(let j = 0; j < d; j += 1) {
-            observation.push(min + Math.random() * range);
+            observation.push((Math.random() - 0.5) * spread);
+            if(center) {
+                observation[j] += center[j];
+            }
         }
 
         return observation;
