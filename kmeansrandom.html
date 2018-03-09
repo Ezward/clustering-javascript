@@ -13,38 +13,83 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
 
     <style>
-        .container
-        {
+        .container {
             position: absolute;
-            top: 5%;
+            top: 5em;
             left: 5%;
             bottom: 5%;
             right: 5%;
         }
 
-        .container canvas
-        {
+        .container canvas {
             position: relative;
             width: 100%;
             height: 100%;
         }
 
-        .controls
-        {
+        .controls {
             position: absolute;
-            top: 2%;
+            top: 1em;
             left: 5%;
         }
 
-        .hidden 
-        {
+        .hidden {
             visibility: hidden;
             display: none;
         }
 
-        .inline
-        {
-            display: inline; 
+        .inline {
+            display: inline-block; 
+        }
+
+        .action {
+            width: 6rem;
+        }
+
+        .selector {
+            width: 10rem;
+            margin-left: 1rem;
+        }
+
+        .parameters {
+            width: 40rem;
+        }
+
+        .parameters * {
+            margin-left: 0.25rem;
+        }
+
+        .parameters input {
+            width: 4rem;
+        }
+
+        .label {
+            font-weight: 400;
+            font-size: 11px;
+            font-family: system-ui;
+
+            padding-top: 1px;
+            padding-bottom: 2px;
+            text-align: center;
+        }
+
+        .button {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        .button:active {
+            background-color: rgb(26, 107, 29);
+        }
+
+        .parameters span span {
+            display: inline-block;
+            width: 2rem;
+            text-align: right;
+
         }
 
 
@@ -54,45 +99,55 @@
 <body onKeyUp="onKey(event)">
     <div id="controls" class="controls">
 
-        <!-- // select the plot to view: True Labels, Clustered Labels, Cluster Composition -->
-        <select onchange="showPlot(this.value)" value="container">
-            <option value="container">Dataset Clustered</option>
-            <option value="container2">Dataset True Labels</option>
-            <option value="container3">Dataset Cluster Composition</option>
-        </select>
-
         <!-- select the random data generation algorithm -->
-        <select id="select_generator" value="spherical">
-            <option value="spherical">Spherical Random Data</option>
-            <option value="normal">Normal Random Data</option>
-            <option value="uniform">Uniform Random Data</option>
-        </select>
+        <div>
+            <div id="generateData" class="action label button" onclick="com.lumpofcode.generateData()">Generate Data</div>
 
-        <!-- select the random data generation parameters -->
-        <div id="dataset_parameters" style="display: inline">
-            <span>k=</span><input name="kDataEdit" type="number" value="3" min="1" max="100" />
-            <span>n=</span><input name="nDataEdit" type="number" value="100" min="1" max="30000" />
-            <span>d=</span><input name="dDataEdit" type="number" value="2" min="2" max="100" />
+            <select id="select_generator" value="spherical" class="selector" >
+                <option value="spherical">Spherical Random Data</option>
+                <option value="normal">Normal Random Data</option>
+                <option value="uniform">Uniform Random Data</option>
+            </select>
+
+            <!-- select the random data generation parameters -->
+            <div id="dataset_parameters" class="parameters inline">
+                <span title="Number of generated clusters"/><span>k =</span><input name="kDataEdit" type="number" value="3" min="1" max="100"></span>
+                <span title="Size of generated clusters"/><span>n =</span><input name="nDataEdit" type="number" value="100" min="1" max="30000" /></span>
+                <span title="Number of dimensions in each generated data point"><span>d =</span><input name="dDataEdit" type="number" value="2" min="2" max="100" /></span>
+            </div>
         </div>
 
-        <!-- select the clustering algorithm: kmeans, kmeans++ or dbscan -->
-        <select id="select_algorithm" value="kmeans" onchange="selectAlgorithm(this.value)">
-            <option value="kmeans">KMeans</option>
-            <option value="kmeans++">KMeans++</option>
-            <option value="dbscan">DBSCAN</option>
-        </select>
+        <div>
+            <div class="action label button" onclick="com.lumpofcode.clusterData()">Cluster Data</div>
 
-        <!-- edit kmeans/kmeans++ parameters -->        
-        <span id="kmeans_parameters">
-            <span>k=</span><input name="kEdit" type="number" value="3" min="2" max="10" />
-        </span>
+                <!-- select the clustering algorithm: kmeans, kmeans++ or dbscan -->
+            <select id="select_algorithm" value="kmeans" class="selector" onchange="selectAlgorithm(this.value)">
+                <option value="kmeans">KMeans</option>
+                <option value="kmeans++">KMeans++</option>
+                <option value="dbscan">DBSCAN</option>
+            </select>
 
-        <!-- edit dbscan parameters; epsilon (ε), minimum points -->
-        <span id="dbscan_parameters" class="hidden">
-            <span>&epsilon;=</span><input name="eEdit" type="number" value="0.4" min="0.1" max="5" />
-            <span>minimum points=</span><input name="mEdit" type="number" value="4" min="1" max="30" />
-        </span>
-        <button class="reset" onclick="recalculate()">Recalculate</button>
+            <!-- edit kmeans/kmeans++ parameters -->        
+            <span id="kmeans_parameters" class="parameters" >
+                <span title="Target number of clusters"><span>k =</span><input name="kEdit" type="number" value="3" min="2" max="10" /></span>
+            </span>
+
+            <!-- edit dbscan parameters; epsilon (ε), minimum points -->
+            <span id="dbscan_parameters" class="parameters hidden">
+                <span title="Maximum distance to immediate cluster neighbors"><span>&epsilon; =</span><input name="eEdit" type="number" value="0.4" min="0.1" max="5" /></span>
+                <span title="Minimum number of neighbors in cluster"><span>m =</span><input name="mEdit" type="number" value="4" min="1" max="30" /></span>
+            </span>
+        </div>
+        <div>
+            <div class="action label inline">Show Plot</div>
+
+            <!-- // select the plot to view: True Labels, Clustered Labels, Cluster Composition -->
+            <select onchange="showPlot(this.value)" value="container" class="selector" >
+                <option value="container">Dataset Clustered</option>
+                <option value="container2">Dataset True Labels</option>
+                <option value="container3">Dataset Cluster Composition</option>
+            </select>
+        </div>
     </div>
 
     <div id="container" class="container">
@@ -106,11 +161,14 @@
     </div>
 
     <script>
-        function recalculate() {
-            require('./kmeansRandomMain');
-        }
-        function onKey(e) {
-            if(e.keyCode===13) recalculate();
+        var com = com || {};
+        com.lumpofcode = com.lumpofcode || {};
+        function onLoaded() {
+            require(["./kmeansRandomMain"], function(kmeansRandomMain) {
+                com.lumpofcode.generateData = kmeansRandomMain.generateData;
+                com.lumpofcode.clusterData = kmeansRandomMain.clusterData;
+                com.lumpofcode.generateData();
+            });
         }
         function selectAlgorithm(algorithm) {
             if("dbscan" === algorithm) {
@@ -123,7 +181,8 @@
         }
     </script>
     
-        <!-- bootstrap application with requirejs -->
+    
+    <!-- bootstrap application with requirejs -->
     <!-- <script data-main="kmeansRandomRequireConfig.js" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.5/require.js"></script> -->
 
     <!-- either user requirejs (above) OR these script tags, but not both -->
@@ -136,8 +195,8 @@
     <script src="src/main/js/dbscan/dbscan.js" ></script>
     <script src="src/main/js/dataset/randomData.js" ></script>
     <script src="src/main/js/kmeansRandomApp.js" ></script>
-    <script src="src/main/js/kmeansRandomMain.js" onload="recalculate()"></script>
+    <script src="src/main/js/kmeansRandomMain.js" onload="onLoaded()"></script>
+
 
 </body>
-
 </html>

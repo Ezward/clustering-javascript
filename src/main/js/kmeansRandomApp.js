@@ -213,6 +213,17 @@ define(function (require) {
         };
     }
 
+    /**
+     * Cluster the observations given the algorithm and parameters
+     * and return the resulting model.
+     * 
+     * @param {*} observations 
+     * @param {*} k 
+     * @param {*} epsilon 
+     * @param {*} minimumPoints 
+     * @param {*} algorithm 
+     * @return {*} results iterations, durationMs and model with observations, centroids, assignments, clusters, 
+     */
     function cluster(observations, k, epsilon, minimumPoints, algorithm) {
         switch(algorithm) {
             case 'kmeans': return clusterWithKmeans(observations, k, randomCentroidInitializer);

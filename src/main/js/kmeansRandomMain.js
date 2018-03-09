@@ -4,18 +4,12 @@
 define(function (require) {
     "use strict";
 
-    //
-    // cluster random data
-    //
-    require(["./kmeansRandomApp"], function(kmeansRandomApp) {
-        //
-        // get clustering values from controls
-        //
-        const k = parseInt(document.querySelector(".controls input[name=kEdit]").value);
-        const e = parseFloat(document.querySelector(".controls input[name=eEdit]").value);
-        const m = parseInt(document.querySelector(".controls input[name=mEdit]").value);
-        const algorithm = document.querySelector("#select_algorithm").value;
+    const kmeansRandomApp = require("./kmeansRandomApp");
 
+    let randomDataModel = undefined;
+    let clusteredDataModel = undefined; 
+
+    function generateData() {
         //
         // get data generation values from controls
         //
@@ -27,16 +21,34 @@ define(function (require) {
         //
         // generate the random data set
         //
-        const randomData = kmeansRandomApp.generate(kData, n, d, generator);
+        randomDataModel = kmeansRandomApp.generate(kData, n, d, generator);
+        clusterData();
+    }
 
-        //
-        // cluster the data set with the requested algorithm
-        //
-        const randomResults = kmeansRandomApp.cluster(randomData.observations, k, e, m, algorithm);
+    //
+    // cluster random data
+    //
+    function clusterData() {
+        if(undefined != randomDataModel) {
+            //
+            // get clustering values from controls
+            //
+            const k = parseInt(document.querySelector(".controls input[name=kEdit]").value);
+            const e = parseFloat(document.querySelector(".controls input[name=eEdit]").value);
+            const m = parseInt(document.querySelector(".controls input[name=mEdit]").value);
+            const algorithm = document.querySelector("#select_algorithm").value;
 
-        //
-        // plot the results
-        //
-        kmeansRandomApp.plot(document.querySelector("#container canvas"), randomResults);
-    });
+            //
+            // cluster the data set with the requested algorithm
+            //
+            clusteredDataModel = kmeansRandomApp.cluster(randomDataModel.observations, k, e, m, algorithm);
+
+            //
+            // plot the results of clustering the randome data
+            //
+            kmeansRandomApp.plot(document.querySelector("#container canvas"), clusteredDataModel);
+        }
+    }
+
+    return {'generateData': generateData, 'clusterData': clusterData};
 });
