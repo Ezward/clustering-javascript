@@ -45,9 +45,10 @@ define(function (require) {
      * @param {number} k number of clusters
      * @param {number} n number of points in each cluster
      * @param {number} d dimension of observations and centroids
+     * @param {number} r range of axes
      * @return {*} the initial model with observations, centroids, assignments and clusters
      */
-    function randomSphericalClusters(k, n, d) {
+    function randomSphericalClusters(k, n, d, r) {
         const centroids = [];
         const clusters = [];
         let observations = [];
@@ -56,7 +57,7 @@ define(function (require) {
             //
             // generate observations, assignments and cluster center 
             //
-            const centroid = randomCenter(d, Math.sqrt(k));
+            const centroid = randomCenter(d, r);
             const clusterObservations = randomModel.randomSphericalVectors(n, d, 1.0, centroid);
             const clusterAssignments = clusterObservations.map(o => i);    // generate assignment to this cluster for each observation
             centroids.push(centroid);
@@ -80,9 +81,10 @@ define(function (require) {
      * @param {number} k number of clusters
      * @param {number} n number of points in each cluster
      * @param {number} d dimension of observations and centroids
+     * @param {number} r range of axes
      * @return {*} the initial model with observations, centroids, assignments and clusters
      */
-    function randomNormalClusters(k, n, d) {
+    function randomNormalClusters(k, n, d, r) {
         const centroids = [];
         const clusters = [];
         let observations = [];
@@ -91,7 +93,7 @@ define(function (require) {
             //
             // generate observations, assignments and cluster center 
             //
-            const centroid = randomCenter(d, Math.sqrt(k));
+            const centroid = randomCenter(d, r);
             const clusterObservations = randomModel.randomNormalVectors(n, d, centroid);
             const clusterAssignments = clusterObservations.map(o => i);    // generate assignment to this cluster for each observation
             centroids.push(centroid);
@@ -115,9 +117,10 @@ define(function (require) {
      * @param {number} k number of clusters
      * @param {number} n number of points in each cluster
      * @param {number} d dimension of observations and centroids
+     * @param {number} r range of axes
      * @return {*} the initial model with observations, centroids, assignments and clusters
      */
-    function randomUniformClusters(k, n, d) {
+    function randomUniformClusters(k, n, d, r) {
         const centroids = [];
         const clusters = [];
         let observations = [];
@@ -126,7 +129,7 @@ define(function (require) {
             //
             // generate observations, assignments and cluster center 
             //
-            const centroid = randomCenter(d, Math.sqrt(k));
+            const centroid = randomCenter(d, r);
             const clusterObservations = randomModel.randomVectors(n, d, centroid);
             const clusterAssignments = clusterObservations.map(o => i);    // generate assignment to this cluster for each observation
             centroids.push(centroid);
@@ -149,13 +152,14 @@ define(function (require) {
      * @param {number} k number of clusters to generate
      * @param {number} n number of points in each cluster
      * @param {number} d dimension of observations and centroids
+     * @param {number} r range of axes
      * @param {string} dataType is "spherical" or "normal"
      */
-    function generateRandomModel(k, n, d, dataType) {
+    function generateRandomModel(k, n, d, r, dataType) {
         switch(dataType) {
-            case "spherical": return randomSphericalClusters(k, n, d);
-            case "normal": return randomNormalClusters(k, n, d);
-            case "uniform": return randomUniformClusters(k, n, d);
+            case "spherical": return randomSphericalClusters(k, n, d, r);
+            case "normal": return randomNormalClusters(k, n, d, r);
+            case "uniform": return randomUniformClusters(k, n, d, r);
         }
         throw Error("unexpected dataType in generateRandomModel()");
     }

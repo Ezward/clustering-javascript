@@ -16,12 +16,13 @@ define(function (require) {
         const kData = parseInt(document.querySelector(".controls input[name=kDataEdit]").value);
         const n = parseInt(document.querySelector(".controls input[name=nDataEdit]").value);
         const d = parseInt(document.querySelector(".controls input[name=dDataEdit]").value);
+        const r = parseInt(document.querySelector(".controls input[name=rDataEdit]").value);
         const generator = document.querySelector("#select_generator").value;
 
         //
         // generate the random data set
         //
-        randomDataModel = kmeansRandomApp.generate(kData, n, d, generator);
+        randomDataModel = kmeansRandomApp.generate(kData, n, d, r, generator);
         clusterData();
     }
 
