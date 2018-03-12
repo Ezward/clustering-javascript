@@ -143,7 +143,7 @@
             <div class="action label inline">Show Plot</div>
 
             <!-- // select the plot to view: True Labels, Clustered Labels, Cluster Composition -->
-            <select onchange="showPlot(this.value)" value="container" class="selector" >
+            <select onchange="com.lumpofcode.plotData(this.value)" value="container" class="selector" >
                 <option value="container">Dataset Clustered</option>
                 <option value="container2">Dataset True Labels</option>
                 <option value="container3">Dataset Cluster Composition</option>
@@ -167,6 +167,7 @@
         function onLoaded() {
             require(["./kmeansRandomMain"], function(kmeansRandomMain) {
                 com.lumpofcode.generateData = kmeansRandomMain.generateData;
+                com.lumpofcode.plotData = kmeansRandomMain.plotData;
                 com.lumpofcode.clusterData = kmeansRandomMain.clusterData;
                 com.lumpofcode.generateData();
             });

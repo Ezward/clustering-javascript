@@ -120,6 +120,11 @@ define(function () {
         return {
             'model': {
                 'observations': observations, 
+                'parameters': {
+                    'algorithm': 'dbscan',
+                    'e': epslilon,
+                    'm': minimumPoints
+                },
                 'assignments': assignments
             }, 
             'iterations': iterations, 

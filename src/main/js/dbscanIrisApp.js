@@ -150,6 +150,7 @@ define(function (require) {
         clusters.push(results.outliers);
         const k = clusters.length;
         const clusterCompositions = results.clusterCompositions;
+        const parameters = model.parameters;
 
         console.log(JSON.stringify(clusterCompositions));
 
@@ -175,7 +176,7 @@ define(function (require) {
             maintainAspectRatio: false,
             title: {
                 display: true,
-                text: showClusterColor ? 'Iris data set clustered using K-Means (k=$k)'.replace('$k', k) : "Iris data set"
+                text: showClusterColor ? 'Iris data set clustered using dbscan (ε=$e, m=$m)'.replace('$e', parameters.e).replace("$m", parameters.m) : "Iris data set"
             },
             legend: {
                 position: 'bottom',

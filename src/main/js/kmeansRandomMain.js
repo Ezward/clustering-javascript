@@ -23,6 +23,15 @@ define(function (require) {
         // generate the random data set
         //
         randomDataModel = kmeansRandomApp.generate(kData, n, d, r, generator);
+
+        //
+        // plot the generated labels
+        //
+        kmeansRandomApp.plotLabels(document.querySelector("#container2 canvas"), randomDataModel, generator);
+
+        //
+        // cluster the generated data using the current settings
+        //
         clusterData();
     }
 
@@ -51,5 +60,15 @@ define(function (require) {
         }
     }
 
-    return {'generateData': generateData, 'clusterData': clusterData};
+    /**
+     * show the plot (it has already been generated)
+     * @param {*} container 
+     */
+    function plotData(container) {
+        document.querySelectorAll('.container').forEach(e => e.classList.add('hidden'));
+        document.getElementById(container).classList.remove('hidden');
+    }
+
+
+    return {'generateData': generateData, 'clusterData': clusterData, 'plotData': plotData};
 });

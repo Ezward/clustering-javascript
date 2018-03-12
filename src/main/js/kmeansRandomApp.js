@@ -208,6 +208,11 @@ define(function (require) {
         const results = kmeans.cluster(observations, initialClusters);
         const clusters = kmeans.assignmentsToClusters(results.model);
 
+        //
+        // fixup model parameters
+        //
+        results.model.parameters.algorithm = (initializer === kmeanspp) ? 'kmeans++' : 'kmeans';
+
         return {
             'model': results.model,
             'clusters': clusters,
@@ -263,15 +268,20 @@ define(function (require) {
         // 
         // add the outliers as the last cluster
         //
-        const hasOutliers = results.outliers.length > 0;
+        const hasOutliers = outliers.length > 0;
         const clusters = [];
         results.clusters.forEach(c => clusters.push(c));
         if(hasOutliers) {
-            clusters.push(results.outliers);
+            clusters.push(outliers);
         }
         const k = clusters.length;
 
-
+        const algorithm = model.parameters.algorithm;
+        const parameters = model.parameters;
+        let algorithmLabel = algorithm + 
+                ((algorithm === 'dbscan') 
+                ? " (ε=$e, m=$m)".replace("$e", parameters.e).replace("$m", parameters.m) 
+                : " (k=$k)".replace("$k", parameters.k));
         //
         // plot the clusters
         //
@@ -293,10 +303,10 @@ define(function (require) {
             maintainAspectRatio: false,
             title: {
                 display: true,
-                text: 'Random data set (d=$d, n=$n) clustered using K-Means (k=$k)'
+                text: 'Random data set (d=$d, n=$n) clustered using ' 
                         .replace("$d", d)
                         .replace('$n', n)
-                        .replace('$k', k)
+                        + algorithmLabel
             },
             legend: {
                 position: 'bottom',
@@ -337,6 +347,108 @@ define(function (require) {
 
     }
 
-    return {'generate': generateRandomModel, 'cluster': cluster, 'plot': plot};
+
+    let labelsChart = undefined;
+
+    /**
+     * plot the clustred iris data model.
+     * 
+     * @param {object} results of generate(), with model, clusters and clusterCompositions
+     * @param {boolean} showClusterColor true to show learned cluster points
+     * @param {boolean} showSpeciesColor true to show known dataset labelled points
+     */
+    function plotGeneratedLabels(canvas, data, generator) {
+
+        //
+        // map iris data rows from dictionary to vector (array), leaving out the label
+        //
+        const observations = data.observations;
+        const assignments = data.assignments;
+        const centroids = data.centroids || [];    // dbscan does not produce centroids
+        const outliers = data.outliers || [];    // kmeans does not produce outliers
+        const d = observations[0].length;
+        const n = observations.length;
+
+        // 
+        // add the outliers as the last cluster
+        //
+        const hasOutliers = outliers.length > 0;
+        const clusters = [];
+        data.clusters.forEach(c => clusters.push(c));
+        if(hasOutliers) {
+            clusters.push(outliers);
+        }
+        const k = clusters.length;
+
+
+        //
+        // plot the clusters
+        //
+        const chartData = {
+            // for the purposes of plotting in 2 dimensions, we will use 
+            // x = dimension 0 and y = dimension 1 
+            datasets: clusters.map(function(c, i) { 
+                return {
+                    label: (hasOutliers && (i === k-1)) ? "outliers" : ("cluster " + String.fromCharCode(i + 65)),
+                    data: c.map(d => ({'x': d[0], 'y': d[1]})),
+                    backgroundColor: clusterColor[i % clusterColor.length],
+                    pointBackgroundColor: clusterColor[i % clusterColor.length],
+                    pointBorderColor:  clusterColor[i % clusterColor.length]
+                };
+            })
+        };
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            title: {
+                display: true,
+                text: 'Random $generator data set labels (k=$k, n=$n, d=$d)'
+                        .replace("$d", d)
+                        .replace('$n', n)
+                        .replace('$k', k)
+                        .replace('$generator', generator)
+            },
+            legend: {
+                position: 'bottom',
+                display: true
+            },
+            scales: {
+                xAxes: [{
+                    type: 'linear',
+                    position: 'bottom',
+                    scaleLabel: {
+                        labelString: 'x axis',
+                        display: false,
+                    }
+                }],
+                yAxes: [{
+                    type: 'linear',
+                    position: 'left',
+                    scaleLabel: {
+                        labelString: 'y axis',
+                        display: false
+                    }
+                }]
+            }
+        };
+
+        //
+        // we need to destroy the previous chart so it's interactivity 
+        // does not continue to run
+        //
+        if(undefined !== labelsChart) {
+            labelsChart.destroy()
+        } 
+        labelsChart = new Chart(canvas, {
+            type: 'scatter',
+            data: chartData,
+            options: chartOptions,
+        });
+
+    }
+
+
+
+    return {'generate': generateRandomModel, 'cluster': cluster, 'plot': plot, 'plotLabels': plotGeneratedLabels};
 });
 

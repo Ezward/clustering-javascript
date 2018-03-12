@@ -197,6 +197,11 @@ define(function (require) {
 
         // console.log(newModel);
         const finish = new Date();
+        newModel.parameters = {
+            'algorithm': 'kmeans',
+            'maxIterations': maximumIterations,
+            'k': centroids.length
+        }
         return {
             'model': newModel, 
             'iterations': i, 
