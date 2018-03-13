@@ -70,7 +70,14 @@ define(function (require) {
             'observations': observations,
             'centroids': centroids,
             'assignments': assignments,
-            'clusters': clusters
+            'clusters': clusters,
+            'generator': {
+                'generator': "uniform",
+                'k': k,
+                'n': n,
+                'd': d,
+                'r': r
+            }
         };
     }
 
@@ -106,7 +113,14 @@ define(function (require) {
             'observations': observations,
             'centroids': centroids,
             'assignments': assignments,
-            'clusters': clusters
+            'clusters': clusters,
+            'generator': {
+                'generator': "uniform",
+                'k': k,
+                'n': n,
+                'd': d,
+                'r': r
+            }
         };
     }
 
@@ -142,7 +156,14 @@ define(function (require) {
             'observations': observations,
             'centroids': centroids,
             'assignments': assignments,
-            'clusters': clusters
+            'clusters': clusters,
+            'generator': {
+                'generator': "uniform",
+                'k': k,
+                'n': n,
+                'd': d,
+                'r': r
+            }
         };
     }
 
@@ -242,6 +263,94 @@ define(function (require) {
         throw new Error("unexpected algorithm in cluster()");
     }
 
+    //
+    // return label for generated cluster
+    //
+    function syntheticLabel(i) {
+        return "Cluster " + String.fromCharCode(i + 65);
+    }
+
+
+
+    /**
+     * @private
+     * using the data labels from the randomly generated data, 
+     * calculate the proportion of each generated cluster
+     * in the calculated clusters.  
+     *
+     * So if 1/4 of the Cluster A data points
+     * are in cluster0, then report 25% Cluster A.
+     * Note that a cluster will have as many labels as generated clusters
+     * and they may not add up to 100% for that cluster, but 
+     * each generated cluster will add up to 100% over all calculated clusters.
+     * 
+     * @param {clusters} array of observation indicies (generated data row) for each cluster
+     * @return map of species to percent for each cluster (centroid)
+     */
+    function measureClusterCompositions(data, clusters, outliers) {
+
+        /**
+         * count each type of generated cluster in the given calculated cluster.
+         * 
+         * @param {*} cluster 
+         * @return {*} object with cluster count for each generated type
+         */
+        function computeClusterCounts(data, cluster) {
+            // initialize each generated cluster count to zero, then count all assignments
+            const counts = data.clusters.map(c => 0); 
+            cluster.forEach(observationIndex => counts[data.assignments[observationIndex]] += 1 );
+
+            // map counts to the names of the generated clusters
+            const composition = {};
+            data.clusters.forEach((c, i) => composition["Cluster " + String.fromCharCode(i + 65)] = counts[i]);
+            return composition;
+        }
+
+        /**
+         * Use count of each generated type to compute the percetage composition in the cluster.
+         * @param {*} clusterComposition 
+         */
+        function mapClusterCountToPercentage(clusterComposition) {
+
+            const percentageComposition = {};
+            syntheticLabels.forEach((n, i) => 
+                percentageComposition[n] =  {
+                    'count': clusterComposition[n], 
+                    'percent': clusterComposition[n] / generatedCounts[n]
+                });
+            return percentageComposition;
+        }
+
+        //
+        // names of generated clusters
+        //
+        const syntheticLabels = data.clusters.map((c, i) => syntheticLabel(i));
+
+        //
+        // count total number of each generated cluster using labels given in the dataset
+        //
+        const generatedCounts = {};
+        data.clusters.forEach((c, i) => generatedCounts[syntheticLabels[i]] = c.length);
+
+        //
+        // count how many of each species in each cluster
+        //
+        const clusterCounts = clusters.map(c => computeClusterCounts(data, c));
+        const outlierCounts = computeClusterCounts(data, outliers);
+
+        //
+        // turn counts into percentages
+        //
+        const clusterPercentages = clusterCounts.map(clusterCount => mapClusterCountToPercentage(clusterCount));
+        const outlierPercentages = mapClusterCountToPercentage(outlierCounts);
+
+        return {
+            "clusterCompositions": clusterPercentages, 
+            "outlierComposition": outlierPercentages
+        };
+    }
+
+
     const clusterColor = ['red', 'green', 'blue', 'yellow', 'purple', 'cyan', 'magenta', 'pink', 'brown', 'black'];
     let chart = undefined;
 
@@ -298,14 +407,29 @@ define(function (require) {
                 };
             })
         };
+
+        //
+        // add centroids to datasets
+        //
+        if(centroids && centroids.length > 0) {
+            chartData.datasets.unshift({
+                label: "Centroids",
+                data: centroids.map(d => ({'x': d[0], 'y': d[1]})),
+                pointRadius: 5,
+                fill: false,
+                pointBorderColor: 'black'
+            });
+        }
+
         const chartOptions = {
             responsive: true,
             maintainAspectRatio: false,
             title: {
                 display: true,
-                text: 'Random data set (d=$d, n=$n) clustered using ' 
-                        .replace("$d", d)
+                text: 'Random data set (k=$k, d=$d, n=$n) clusters learned using ' 
+                        .replace("$k", k)
                         .replace('$n', n)
+                        .replace("$d", d)
                         + algorithmLabel
             },
             legend: {
@@ -357,10 +481,10 @@ define(function (require) {
      * @param {boolean} showClusterColor true to show learned cluster points
      * @param {boolean} showSpeciesColor true to show known dataset labelled points
      */
-    function plotGeneratedLabels(canvas, data, generator) {
+    function plotGeneratedLabels(canvas, data) {
 
         //
-        // map iris data rows from dictionary to vector (array), leaving out the label
+        // map  data rows from dictionary to vector (array), leaving out the label
         //
         const observations = data.observations;
         const assignments = data.assignments;
@@ -397,16 +521,30 @@ define(function (require) {
                 };
             })
         };
+
+        //
+        // add centroids to datasets
+        //
+        if(data.centroids && data.centroids.length > 0) {
+            chartData.datasets.unshift({
+                label: "Centroids",
+                data: data.centroids.map(d => ({'x': d[0], 'y': d[1]})),
+                pointRadius: 5,
+                fill: false,
+                pointBorderColor: 'black'
+            });    
+        }
+
         const chartOptions = {
             responsive: true,
             maintainAspectRatio: false,
             title: {
                 display: true,
-                text: 'Random $generator data set labels (k=$k, n=$n, d=$d)'
+                text: 'random $generator data set labels (k=$k, n=$n, d=$d)'
                         .replace("$d", d)
                         .replace('$n', n)
                         .replace('$k', k)
-                        .replace('$generator', generator)
+                        .replace('$generator', data.generator.generator)
             },
             legend: {
                 position: 'bottom',
@@ -447,8 +585,90 @@ define(function (require) {
 
     }
 
+    let compositionChart = undefined;
+
+    /**
+     * Plot the composition of the calculated clusters with respect to
+     * the true labels.
+     * 
+     * @param {*} canvas 
+     * @param {*} data 
+     * @param {*} results 
+     */
+    function plotClusterComposition(canvas, data, results) {
+
+        //
+        // names of generated clusters
+        //
+        const syntheticLabels = data.clusters.map((c, i) => syntheticLabel(i));
+
+        //
+        // calculate the clusters' composition and outlier compositions
+        //
+        const resultsComposition = measureClusterCompositions(data, results.clusters, results.outliers);
+        const clusterCompositions = [];
+        resultsComposition.clusterCompositions.forEach(cc => clusterCompositions.push(cc));
+        clusterCompositions.push(resultsComposition.outlierComposition);
+
+        const k = clusterCompositions.length;
+
+        const generator = data.generator;
+        const generatorLabel = 'Random $generator data set (k=$k, n=$n, d=$d)'
+        .replace("$d", generator.d)
+        .replace('$n', generator.n)
+        .replace('$k', generator.k)
+        .replace('$generator', generator.generator)
 
 
-    return {'generate': generateRandomModel, 'cluster': cluster, 'plot': plot, 'plotLabels': plotGeneratedLabels};
+        const datasets = syntheticLabels.map((sp, i) => ({
+                label: sp,
+                data: clusterCompositions.map(cc => cc[sp].percent),
+                backgroundColor: clusterColor[i % clusterColor.length]
+        }));
+
+        const chartConfig = {
+            type: 'bar',
+            data: {
+                labels: clusterCompositions.map((cc, i) => (i == k-1) ? "outliers" : ("cluster" + i)),
+                datasets: datasets,    
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                title: {
+                    display: true,
+                    text: "Learned cluster composition (k=$k) for $dataset".replace("$k", k-1).replace("$dataset", generatorLabel)
+                },
+                legend: {
+                    position: 'bottom',
+                    display: true
+                },
+                tooltips: {
+                    callbacks: {
+                        label: (tooltipItem, data) => syntheticLabels[tooltipItem.datasetIndex] + ": " + Math.floor(clusterCompositions[tooltipItem.index][syntheticLabels[tooltipItem.datasetIndex]].percent * 1000) / 10 + "%",
+                        labelColor: (tooltipItem, data) => ({'backgroundColor': clusterColor[tooltipItem.datasetIndex]})
+                    }
+                }
+            }
+        };
+
+        //
+        // remove previous chart before creating a new one
+        //
+        if(undefined !== compositionChart) {
+            compositionChart.destroy()
+        }
+        compositionChart = new Chart(canvas, chartConfig);
+
+    }
+
+
+    return {
+        'generate': generateRandomModel, 
+        'cluster': cluster, 
+        'plot': plot, 
+        'plotLabels': plotGeneratedLabels,
+        'plotComposition': plotClusterComposition
+    };
 });
 

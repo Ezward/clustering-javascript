@@ -103,9 +103,9 @@
         <div>
             <div id="generateData" class="action label button" onclick="com.lumpofcode.generateData()">Generate Data</div>
 
-            <select id="select_generator" value="spherical" class="selector" >
-                <option value="spherical">Spherical Random Data</option>
+            <select id="select_generator" value="normal" class="selector" >
                 <option value="normal">Normal Random Data</option>
+                <option value="spherical">Spherical Random Data</option>
                 <option value="uniform">Uniform Random Data</option>
             </select>
 
@@ -143,18 +143,18 @@
             <div class="action label inline">Show Plot</div>
 
             <!-- // select the plot to view: True Labels, Clustered Labels, Cluster Composition -->
-            <select onchange="com.lumpofcode.plotData(this.value)" value="container" class="selector" >
-                <option value="container">Dataset Clustered</option>
+            <select onchange="com.lumpofcode.plotData(this.value)" value="container2" class="selector" >
                 <option value="container2">Dataset True Labels</option>
+                <option value="container">Dataset Clustered</option>
                 <option value="container3">Dataset Cluster Composition</option>
             </select>
         </div>
     </div>
 
-    <div id="container" class="container">
+    <div id="container" class="container hidden">
         <canvas></canvas>
     </div>
-    <div id = "container2" class="container hidden">
+    <div id = "container2" class="container">
         <canvas></canvas>
     </div>
     <div id = "container3" class="container hidden">
