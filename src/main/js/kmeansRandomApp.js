@@ -608,7 +608,11 @@ define(function (require) {
         const resultsComposition = measureClusterCompositions(data, results.clusters, results.outliers);
         const clusterCompositions = [];
         resultsComposition.clusterCompositions.forEach(cc => clusterCompositions.push(cc));
-        clusterCompositions.push(resultsComposition.outlierComposition);
+
+        const hasOutliers = (results.outliers && (results.outliers.length > 0));
+        if(hasOutliers) {
+            clusterCompositions.push(resultsComposition.outlierComposition);
+        }
 
         const k = clusterCompositions.length;
 
@@ -629,7 +633,7 @@ define(function (require) {
         const chartConfig = {
             type: 'bar',
             data: {
-                labels: clusterCompositions.map((cc, i) => (i == k-1) ? "outliers" : ("cluster" + i)),
+                labels: clusterCompositions.map((cc, i) => (hasOutliers && (i == k-1)) ? "outliers" : ("cluster" + i)),
                 datasets: datasets,    
             },
             options: {
@@ -637,7 +641,7 @@ define(function (require) {
                 maintainAspectRatio: false,
                 title: {
                     display: true,
-                    text: "Learned cluster composition (k=$k) for $dataset".replace("$k", k-1).replace("$dataset", generatorLabel)
+                    text: "Learned cluster composition (k=$k) for $dataset".replace("$k", hasOutliers ? (k-1) : k).replace("$dataset", generatorLabel)
                 },
                 legend: {
                     position: 'bottom',

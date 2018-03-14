@@ -2,14 +2,14 @@
 
 An implementation of the kmeans, kmeans++ and DBSCAN algorithms in JavaScript.  Examples use the Iris data set and a random data generator.
 * [KMeans on the Iris Data Set](https://ezward.github.io/clustering-javascript/kmeansiris.html)
-* [KMeans on randomly generated data](https://ezward.github.io/clustering-javascript/kmeansrandom.html)
+* [KMeans, KMeans++ and DBSCAN on randomly generated data](https://ezward.github.io/clustering-javascript/kmeansrandom.html)
 * [DBSCAN on the Iris Data Set](https://ezward.github.io/clustering-javascript/dbscaniris.html)
 
 A detailed discussion of kmeans and the kmeans++ initialization algorithm can be found [here](https://github.com/Ezward/machinelearningnotes/tree/master/Clustering%20and%20Retrieval/week%203%20-%20Clustering%20with%20k-means)
 
 ### Dataset
 * dataset/iris.js - the Iris data set in json format.
-* dataset/randomModel.js - generator for random observations of various types
+* dataset/randomData.js - generator for random observations of various types
 
 ### dbscan
 * dbscan/dbscan.js - the dbscan algorithm
@@ -26,6 +26,7 @@ A detailed discussion of kmeans and the kmeans++ initialization algorithm can be
 * loader/loader.js - this is a requirejs compatible module loader that enables "View Source" (see more below).  
 
 ### DBSCAN Cluster Iris data application
+This application allows the user to view the Iris data set and cluster it using DBSCAN with chosen values for epsilon (e) and minimum density points (m).  The resulting cluster composition can be compared to the ground truth labels.
 * dbscaniris.html - page that shows iris data set and DBSCAN clustering and cluster composition.
 * dbscanIrisApp.js - module to cluster and plot the iris data set.
 * dbscanIrisMain.js - main module for clustering iris data; entry point called by kmeansiris.html
@@ -33,12 +34,14 @@ A detailed discussion of kmeans and the kmeans++ initialization algorithm can be
 
 
 ### kmeans Cluster Iris data application
+This application allows the user to view the Iris data set and cluster it using K-Means with k = 3.  The resulting cluster composition can be compared to the ground truth labels.
 * kmeansiris.html - page that shows iris data set and kmeans clustering and cluster composition.
 * kmeansIrisApp.js - module to cluster and plot the iris data set.
 * kmeansIrisMain.js - main module for clustering iris data; entry point called by kmeansiris.html
 * kmeansIrisRequireConfig.js - requirejs config for kmeans iris data application.  This is only used when requirejs is used as the module loader.
 
-### kmeans Cluster random data application
+### Cluster random data application
+This application allows the user to generate various synthetic data sets using Gaussian, spherical or uniformly random data.  The user can then cluster the data with K-Means, K-Means++ and DBSCAN, choosing values for k, e and m as desired.  The resulting cluster composition can be compared the the ground truth labels created during data generation.
 * kmeansrandom.html - page thas show kmeans clustering of random spherical data.
 * kmeansRandomApp.js - module to cluster randomly generated data
 * kmeansRandomMain.js - main module for clustering random data; entry point called by kmeansrandom.html

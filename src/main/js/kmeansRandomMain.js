@@ -27,7 +27,7 @@ define(function (require) {
         //
         // plot the generated labels
         //
-        kmeansRandomApp.plotLabels(document.querySelector("#container2 canvas"), randomDataModel);
+        // kmeansRandomApp.plotLabels(document.querySelector("#container2 canvas"), randomDataModel);
 
         //
         // cluster the generated data using the current settings
@@ -56,6 +56,7 @@ define(function (require) {
             //
             // plot the results of clustering the randome data
             //
+            kmeansRandomApp.plotLabels(document.querySelector("#container2 canvas"), randomDataModel);
             kmeansRandomApp.plot(document.querySelector("#container canvas"), clusteredDataModel);
             kmeansRandomApp.plotComposition(document.querySelector("#container3 canvas"), randomDataModel, clusteredDataModel);
         }
