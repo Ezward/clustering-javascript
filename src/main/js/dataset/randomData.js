@@ -36,7 +36,7 @@ define(function (require) {
         }
 
         // normalize
-        const magnitude = Math.sqrt(magnitude);
+        magnitude = Math.sqrt(magnitude);
         for(let j = 0; j < d; j += 1) {
             observation[j] /= magnitude;
         }
