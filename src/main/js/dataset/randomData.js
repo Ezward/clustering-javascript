@@ -9,12 +9,60 @@ define(function (require) {
     "use strict";
 
     /**
+     * Generate a uniformaly distributed random number in give range.
+     * 
+     * @param {*} a 
+     * @param {*} b 
+     * @return a random, uniformly distributed number in the the range a >= n > b
+     */
+    function randomUniform(a, b) {
+        return Math.random() * (b - a) + a;
+    }
+
+
+    /**
      * @return a random, normally distributed number
      */
-    function randomNormal() {
-        // n = 10 gives a good enough approximation
-        return ((Math.random() + Math.random() + Math.random() + Math.random() + Math.random() 
-            + Math.random() + Math.random() + Math.random() + Math.random() + Math.random()) - 5) / 5;
+    function randomNormal(mean = 0, variance = 1) {
+        // return (Math.random() + Math.random() + Math.random() + Math.random() + Math.random() + Math.random()) / 6;
+
+        let _spare = undefined;
+
+        /**
+         * return random normally distributed number
+         * with mean = 0, variance = 1
+         */
+        function _randomNormal() {
+            //
+            // using Marsaglia Polar Method
+            // https://en.wikipedia.org/wiki/Marsaglia_polar_method
+            //
+            if(undefined !== _spare) {
+                //
+                // each pass generates two independant random numbers.
+                // we save one and if it is avaible, return it.
+                //
+                const spare = _spare;
+                _spare = undefined;
+                return spare;
+            }
+
+            //
+            // generate two independant random normal numbers
+            //
+            let r1, r2, s;
+            do {
+                r1 = Math.random() * 2 - 1;
+                r2 = Math.random() * 2 - 1;
+                s = (r1 * r1) + (r2 * r2);
+            } while((s >= 1) || (s === 0));
+
+            const m = Math.sqrt(-2 * Math.log(s) / s);
+            _spare = r2 * m;
+            return r1  * m;
+        }
+            
+        return mean + Math.sqrt(variance) * _randomNormal();
     }
 
     /**
