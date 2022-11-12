@@ -243,7 +243,8 @@ com.lumpofcode.loader = function() {
 
     /**
      * Call the modules constructor to get an instance of the module.
-     * The may lead to recursive calls to require depencies.
+     * The results in recursive calls to required dependencies, so
+     * they can load their dependencies.
      * 
      * @param {string} path relative path to module being required
      */
@@ -260,8 +261,22 @@ com.lumpofcode.loader = function() {
             }
     
             if(typeof bindings[path] === 'undefined') {
-                bindingStack.unshift(path); // push module being bound onto the stack
-                bindings[path] = modules[path](bind);   // bind the module
+                // 
+                // push the module being bound into the binding stack 
+                // so we can handle recursive calls to bind.
+                //
+                bindingStack.unshift(path);
+                
+                //
+                // Bind the module (resolve it's requirements and add it to the stack).
+                // This function (bind) is passed as the 'require' function to
+                // the module being bound.
+                // This results in recursive calls to this bind function; each
+                // required dependency calls the passed 'require' function to
+                // get it's bound dependencies.
+                //
+                bindings[path] = modules[path](bind); 
+
                 bindingStack.shift();       // pop module, we are done binding it
             }
         
