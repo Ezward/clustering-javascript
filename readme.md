@@ -1,11 +1,40 @@
 # Clustering in JavaScript
 
-An implementation of the kmeans, kmeans++ and DBSCAN algorithms in JavaScript.  Examples use the Iris data set and a random data generator.
+An implementation of the k-means, k-means++ and DBSCAN algorithms in JavaScript.  Examples use the Iris data set and a random data generator.
 * [KMeans on the Iris Data Set](https://ezward.github.io/clustering-javascript/kmeansiris.html)
 * [KMeans, KMeans++ and DBSCAN on randomly generated data](https://ezward.github.io/clustering-javascript/kmeansrandom.html)
 * [DBSCAN on the Iris Data Set](https://ezward.github.io/clustering-javascript/dbscaniris.html)
 
+Clustering is a unsupervised learning task. Our data has no labels. The task is to learn labels from the data – to learn structure inherent in the data. K-means/K-means++ and DBSCAN go about this in different ways.  K-means/K-means++ algorithms take a single parameter; the number of clusters we expect to find in the data.  The algorithm will then attempt to assign every data element in the dataset to to one of the N clusters.  DBSCAN on the other hand is given two parameters that define what a cluster is based on it's density; the number of data points within its area; it then works to find such areas.  So where K-means/K-means++ will always find a specified number of clusters and there will never be outliers, DBSCAN will find zero of more clusters and may also find zero or more outliers; points that don't fall within a cluster.  An important aspect of DBSCAN is that it can find oddly shaped clusters, where KMeans/Kmeans++ cannot. 
+
+## Kmeans Algorithm
+0. Initialize the cluster centers. K-means chooses initial centers at random.  The k-means++ method uses a algorithm to spread out the initial set of centroids so that they are not too close together.
+1. Assign each observation to the cluster center closest to it.
+2. Revise each cluster center to be the mean of its assigned observations.
+3. Repeat 1 and 2 until convergence (until the cluster assignments stop changing within some limit).
+
 A detailed discussion of kmeans and the kmeans++ initialization algorithm can be found [here](https://github.com/Ezward/machinelearningnotes/tree/master/Clustering%20and%20Retrieval/week%203%20-%20Clustering%20with%20k-means)
+
+## DBSCAN Algorithm
+The DBSCAN algorithm takes two parameters that define what a cluster is based on it's density; an area as the radius of a circle and the miniumum number of data points that must within that area to be considered a cluster.  The algorithm works to find such areas.  Epsilon is the radius of the circle to be created around each data point to check the density and minPoints is the minimum number of data points required inside that circle for that data point to be classified as a Core point. A data point is a Core point if the circle around it contains at least ‘minPoints’ number of points. If the number of points is less than minPoints, then it is classified as Border Point, and if there are no other data points around any data point within epsilon radius, then it treated as Noise.
+
+- Start a new cluster
+- For each data point
+  - If the the point is not already assigned to a cluster
+    - Find the neighbors of the data point; the points in the epsilon neighborhood of the point.
+      - If the data point has less than minPoints neighbors then it is an outlier.
+      - If the data point has >= minPoints neighbors then it is a core point of the current cluster.
+      - If the data point is a core point of the current cluster then for each of its neighbors
+        - Find the neighbor's neighbors (the expanded neighbors).
+        - For each expanded neighbor
+          - If the expanded neighbor is marked as an outlier of a prior cluster, then make it a member of the current cluster
+          - If the expanded neighbor is not yet assigned to a cluster, then make it a neighbor of the core point so that it will get processed.
+        - Continue until all the core point's neighbors are processed.
+        - Start a new cluster.
+
+A detailed discussion of DBSCAN can be found [here](https://en.wikipedia.org/wiki/DBSCAN).
+
+## Description of Source Files
 
 ### Dataset
 * dataset/iris.js - the Iris data set in json format.
